@@ -32,7 +32,7 @@ const Navbar = () => {
     }, [])
 
     return (
-        <div className={`w-full flex items-center justify-between z-50 fixed top-0 transition-all bg-white/15 duration-300 p-2 ${scrolledMore ? ' backdrop-blur-md' : 'bg-transparent'}`}>
+        <div className={`w-full flex items-center justify-between z-50 fixed top-0 transition-all bg-white/15 duration-300 p-2 px-4 ${scrolledMore ? ' backdrop-blur-md' : 'bg-transparent'}`}>
             <div className='md:hidden block'>
                 <Sheet>
   <SheetTrigger><Menu /></SheetTrigger>

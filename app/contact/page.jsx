@@ -1,5 +1,6 @@
 'use client'
 import Navbar from '@/components/Navbar'
+import WorldMap from '@/components/ui/world-map'
 
 import { 
   Mail, 
@@ -371,8 +372,42 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-16 bg-gray-50" id="contact-form">
+      <section className="py-16 bg-gray-50" >
         <div className="max-w-6xl mx-auto px-4">
+          <div>
+             <WorldMap dots={[
+          {
+            start: {
+              lat: 64.2008,
+              lng: -149.4937,
+            }, // Alaska (Fairbanks)
+            end: {
+              lat: 34.0522,
+              lng: -118.2437,
+            }, // Los Angeles
+          },
+          {
+            start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
+            end: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+          },
+          {
+            start: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+            end: { lat: 38.7223, lng: -9.1393 }, // Lisbon
+          },
+          {
+            start: { lat: 51.5074, lng: -0.1278 }, // London
+            end: { lat: 28.6139, lng: 77.209 }, // New Delhi
+          },
+          {
+            start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+            end: { lat: 43.1332, lng: 131.9113 }, // Vladivostok
+          },
+          {
+            start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+            end: { lat: -1.2921, lng: 36.8219 }, // Nairobi
+          },
+        ]} />
+              </div>
           <div className="grid md:grid-cols-2 gap-12 items-start">
             {/* Left - Contact Info */}
             <div>
@@ -408,6 +443,7 @@ export default function ContactPage() {
               </div>
 
               {/* Contact Cards */}
+              
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                   <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -415,7 +451,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Email</div>
-                    <div className="text-gray-600">your.email@example.com</div>
+                    <div className="text-gray-600">krshnshrvstv.gwl@gmail.com</div>
                   </div>
                 </div>
 
@@ -460,7 +496,7 @@ export default function ContactPage() {
             </div>
 
             {/* Right - Contact Form */}
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <div id="contact-form" className="bg-white rounded-2xl shadow-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               Send Me a Message
             </h3>
@@ -480,7 +516,7 @@ export default function ContactPage() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form  onSubmit={handleSubmit} className="space-y-5">
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

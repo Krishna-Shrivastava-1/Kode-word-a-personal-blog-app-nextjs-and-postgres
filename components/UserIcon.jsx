@@ -73,7 +73,7 @@ const handleLogout = async () => {
   if (!userData?.success) {
     return (
       <div className="flex items-center gap-2">
-        <div className='hidden sm:flex  items-center'>
+        <div className='hidden md:flex  items-center'>
      <SearchBox />
      <Link href={'/contact'}>
                  <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
