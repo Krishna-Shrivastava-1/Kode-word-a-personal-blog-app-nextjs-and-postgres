@@ -99,11 +99,11 @@ export default async function BlogPostPage({ params }) {
         {/* Meta Info */}
         <div className="bg-white border-b">
           <div className="max-w-4xl mx-auto px-6 py-4">
-            <div className="flex flex-wrap justify-between items-center gap-4 sm:gap-6 text-sm text-gray-600">
+            <div className="flex  justify-between items-center gap-4 sm:gap-6 text-sm text-gray-600">
               <div className="flex flex-wrap gap-4 items-center">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span className="font-medium">{post.name}</span>
+                  <span className="font-medium text-nowrap">{post.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -116,7 +116,7 @@ export default async function BlogPostPage({ params }) {
               </div>
 
               {/* ✅ Added Share Button */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 justify-end ">
                 <div className="flex items-center gap-2">
                   <LikeButton
                     likebyCurrUser={post?.liked_by_current_user}

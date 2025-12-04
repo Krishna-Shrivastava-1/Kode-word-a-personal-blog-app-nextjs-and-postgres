@@ -7,7 +7,7 @@ export default function ShareButton({ postId, title, description }) {
   const [copied, setCopied] = useState(false)
 
   const postUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/post/${postId}` 
+    ? `${window.location.origin}/blog/${postId}` 
     : ''
 
   const encodedUrl = encodeURIComponent(postUrl)
