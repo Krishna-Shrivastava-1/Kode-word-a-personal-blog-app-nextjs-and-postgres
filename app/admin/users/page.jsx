@@ -15,7 +15,7 @@ const page = async() => {
         SELECT name,email,id,image,provider,role,created_at FROM users WHERE role = $1
         `,['user'])
         const allUserData=getallUser?.rows
-        console.log(allUserData)
+        // console.log(allUserData)
   return (
     <div>
       <Table>
