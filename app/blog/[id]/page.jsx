@@ -144,7 +144,7 @@ export default async function BlogPostPage({ params }) {
         </div>
 
         {/* Content */}
-        <div className="max-w-4xl mx-auto px-6 py-8 sm:py-12">
+        <div className="max-w-4xl mx-auto px-2 py-8 sm:py-12">
           <div className="bg-white rounded-2xl overflow-x-auto text-wrap shadow-sm p-6 sm:p-8 lg:p-12">
             <BlogContentRenderer content={post.content} />
           </div>
