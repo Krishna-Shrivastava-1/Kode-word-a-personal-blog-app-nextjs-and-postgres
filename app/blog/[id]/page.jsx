@@ -189,6 +189,7 @@ import BlogContentRenderer from '@/components/BlogContentRenderer'
 import BookmarkButton from '@/components/BookmarkButton'
 import ScrollProgress from '@/components/ScrollProgress'
 import ShareButton from '@/components/ShareButton'
+import Link from 'next/link'
 
 // ✅ Enhanced metadata for SEO
 export async function generateMetadata({ params }) {
@@ -420,10 +421,10 @@ export default async function BlogPostPage({ params }) {
           <div className="absolute inset-0 flex items-end">
             <div className="w-full p-4 sm:p-6 md:p-8 lg:p-12">
               <div className="max-w-5xl mx-auto">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4">
+                {/* <span className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4">
                   <Tag className="w-3 h-3" />
                   {post.tag}
-                </span>
+                </span> */}
 
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-2 sm:mb-3 line-clamp-3">
                   {post.title}
@@ -458,6 +459,7 @@ export default async function BlogPostPage({ params }) {
                   <Eye className="w-4 h-4" />
                   <span>{post.views} views</span>
                 </div>
+                
               </div>
 
               <div className="flex items-center gap-4 justify-end">
@@ -483,8 +485,45 @@ export default async function BlogPostPage({ params }) {
                   />
                 </div>
               </div>
+              
             </div>
+            
           </div>
+           <div className="max-w-4xl px-4 mx-auto ">
+            <div className="flex justify-start items-center  flex-wrap" >
+                      {
+                    
+                      post.tag.split(',').length > 1 ?
+                      post.tag.split(',')?.map((e,ind)=>(
+                          <Link
+          key={ind}
+          href={{ 
+            pathname: `/blog/${id}`, // your current page
+            query: { tag: e.trim() }
+          }}
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+          scroll={false} // prevents scroll jump
+        >
+          <Tag className="w-3 h-3" />
+          {e.trim()}
+        </Link>
+                      ))
+                      
+                      :
+                         <Link
+          href={{ 
+            pathname: `/blog/${id}`, // your current page
+            query: { tag: post.tag.trim() }
+          }}
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+          scroll={false} // prevents scroll jump
+        >
+          <Tag className="w-3 h-3" />
+          {post.tag.trim()}
+        </Link>
+                    }
+                    </div>
+           </div>
         </div>
 
         {/* ✅ Content with itemProp for structured data */}

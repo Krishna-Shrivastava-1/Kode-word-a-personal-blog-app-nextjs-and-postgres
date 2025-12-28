@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar, User, Tag, Bookmark } from 'lucide-react'
+import { Calendar, User, Tag, Bookmark,ArrowRight } from 'lucide-react'
 import pool from '@/lib/db'
 import { Authorized } from '@/controllers/authControl'
 
@@ -57,11 +57,9 @@ const result = await pool.query(`
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   {/* Tag Badge */}
-                  <div className="absolute top-4 w-full flex items-center justify-between px-2 ">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
-                      <Tag className="w-3 h-3" />
-                      {post.tag}
-                    </span>
+                  <div className="absolute top-4 w-full flex items-center justify-end px-2 ">
+                   
+                    
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
                     {
                       post?.bookmarked_by_current_user ? 
@@ -105,12 +103,29 @@ const result = await pool.query(`
                       <span>{formattedDate(post.created_at)}</span>
                     </div>
                   </div>
-
+ <div>
+                      {
+                    
+                      post.tag.split(',').length > 1 ?
+                      post.tag.split(',')?.map((e,ind)=>(
+                         <span key={ind} className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs mr-2 font-semibold bg-blue-600 m-1 text-white backdrop-blur-sm">
+                      <Tag className="w-3 h-3" />
+                      {e}
+                    </span>
+                      ))
+                      
+                      :
+                      <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 m-1 text-white backdrop-blur-sm">
+                      <Tag className="w-3 h-3" />
+                      {post.tag}
+                    </span>
+                    }
+                    </div>
                   {/* Read More */}
-                  <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:gap-2 transition-all">
+                  <div className="flex items-center text-blue-600 font-semibold text-md group-hover:gap-2 transition-all">
                     Read More
                     <span className="inline-block transition-transform group-hover:translate-x-1">
-                      →
+                     <ArrowRight size={18} />
                     </span>
                   </div>
                 </div>

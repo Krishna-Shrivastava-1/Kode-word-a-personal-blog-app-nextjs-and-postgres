@@ -7,9 +7,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from './ui/input'
-import { Search, X, Loader2 } from 'lucide-react'
+import { Search, X, Loader2, Tag } from 'lucide-react'
 import { searchPosts } from '@/controllers/searchPosts'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useSearchParams } from 'next/navigation'
 
 const stripHtml = (html) => {
   if (!html) return ''
@@ -19,11 +20,20 @@ const stripHtml = (html) => {
 }
 
 const SearchBox = () => {
+    const searchParams = useSearchParams()
+  const tagFromUrl = searchParams.get('tag')
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
-  
+  useEffect(() => {
+    if (tagFromUrl && !open) {
+      setQuery(tagFromUrl)
+      setOpen(true)
+      // Clear the URL param after triggering (optional, cleaner UX)
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [tagFromUrl, open])
   // Debounce search query by 400ms
   const debouncedQuery = useDebounce(query, 400)
 
@@ -139,9 +149,31 @@ const SearchBox = () => {
                       {stripHtml(post.subtitle || post.content?.slice(0, 150))}
                     </p>
                     {post.tag && (
-                      <span className='inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full'>
-                        {post.tag}
-                      </span>
+                     <div className="flex justify-start items-center  flex-wrap" >
+                      {
+                    
+                      post.tag.split(',').length > 1 ?
+                      post.tag.split(',')?.map((e,ind)=>(
+                          <span
+                          key={ind}
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+         
+        >
+          <Tag className="w-3 h-3" />
+          {e.trim()}
+        </span>
+                      ))
+                      
+                      :
+                         <span
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+ 
+        >
+          <Tag className="w-3 h-3" />
+          {post.tag.trim()}
+        </span>
+                    }
+                    </div>
                     )}
                   </div>
                 ))}
