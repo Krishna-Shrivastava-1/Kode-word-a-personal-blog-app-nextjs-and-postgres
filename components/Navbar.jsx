@@ -81,7 +81,7 @@ const Navbar = () => {
 <SearchBox />
              
             </div>
-              <FieldSeparator />
+              {/* <FieldSeparator /> */}
               {
                 !UserData && <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
 <UserIcon />
