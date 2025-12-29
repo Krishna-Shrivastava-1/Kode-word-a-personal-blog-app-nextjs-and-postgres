@@ -1,4 +1,3 @@
-
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { Calendar, User, Tag, Eye } from 'lucide-react'
@@ -13,11 +12,12 @@ import ScrollProgress from '@/components/ScrollProgress'
 import ShareButton from '@/components/ShareButton'
 import Link from 'next/link'
 
-// ✅ Enhanced metadata for SEO
+// ✅ 1. SEO METADATA: Optimized for "Title Search" and Indexing
 export async function generateMetadata({ params }) {
   const { id } = await params
 
   try {
+    // Removed 'updated_at' to prevent crash
     const result = await pool.query(
       `SELECT 
         p.title, 
@@ -42,31 +42,25 @@ export async function generateMetadata({ params }) {
 
     const post = result.rows[0]
     
-    // Strip HTML from content for clean description
+    // Clean description for Google snippets
     const stripHtml = (html) => html?.replace(/<[^>]*>/g, '').trim() || ''
     const description = post.subtitle 
-      ? stripHtml(post.subtitle).slice(0, 160)
-      : stripHtml(post.content).slice(0, 160)
+      ? stripHtml(post.subtitle).slice(0, 155)
+      : stripHtml(post.content).slice(0, 155)
 
-    // Generate keywords based on tag and content
-    // const postKeywords = [
-    //   post.tag,
-    //   'programming tutorial',
-    //   'coding guide',
-    //   post.title.toLowerCase().split(' ').slice(0, 3).join(' '),
-    //   'Kode$word'
-    // ].filter(Boolean)
+    // SMART KEYWORDS: Targeting "Solution" searches
     const postKeywords = [
-  'kodesword', // ← BRAND FIRST
-  'kodesword ' + post.tag.toLowerCase(), // "kodesword spring boot"
-  post.tag.toLowerCase(), // "spring boot"
-  post.title.toLowerCase(),
-  'programming tutorial',
-  'Kode$word blog'
-].filter(Boolean).slice(0, 10)
+      'kodesword', 
+      post.title.toLowerCase(),                 // "maximum subarray"
+      `${post.title.toLowerCase()} solution`,   // "maximum subarray solution"
+      `kodesword ${post.tag.toLowerCase()}`,    // "kodesword java"
+      post.tag.toLowerCase(),
+      'programming tutorial',
+      'tech article'
+    ].filter(Boolean).slice(0, 15)
 
     return {
-      title: post.title,
+      title: `${post.title}`, // Standard SEO format: Title | Brand
       description,
       keywords: postKeywords,
       
@@ -79,9 +73,9 @@ export async function generateMetadata({ params }) {
         description,
         type: 'article',
         publishedTime: post.created_at,
-        modifiedTime: post.updated_at || post.created_at,
+        modifiedTime: post.created_at, // Fallback since updated_at missing
         authors: [post.author_name || 'Krishna Shrivastava'],
-        tags: post.tag ? [post.tag] : [],
+        tags: post.tag ? post.tag.split(',') : [],
         url: `https://kodesword.vercel.app/blog/${id}`,
         siteName: 'Kode$word',
         images: post.thumbnailimage ? [
@@ -95,7 +89,7 @@ export async function generateMetadata({ params }) {
       },
       
       alternates: {
-        canonical: `https://kodesword.vercel.app/blog/${id}`,
+        canonical: `https://kodesword.vercel.app/blog/${id}`, // CRITICAL FOR INDEXING
       },
       
       robots: {
@@ -107,7 +101,6 @@ export async function generateMetadata({ params }) {
       
       other: {
         'article:published_time': post.created_at,
-        'article:modified_time': post.updated_at || post.created_at,
         'article:author': post.author_name || 'Krishna Shrivastava',
         'article:tag': post.tag || 'Programming',
       },
@@ -130,24 +123,10 @@ export default async function BlogPostPage({ params }) {
     SELECT 
       p.*, 
       u.name,
-      COALESCE(
-        (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id), 
-        0
-      ) AS like_count,
-      COALESCE(
-        (SELECT COUNT(*) FROM bookmark_user WHERE post_id = p.id), 
-        0
-      ) AS bookmark_count,
-      EXISTS (
-        SELECT 1 
-        FROM post_likes
-        WHERE post_id = p.id AND user_id = $2
-      ) AS liked_by_current_user,
-      EXISTS (
-        SELECT 1 
-        FROM bookmark_user
-        WHERE post_id = p.id AND user_id = $2
-      ) AS bookmarked_by_current_user
+      COALESCE((SELECT COUNT(*) FROM post_likes WHERE post_id = p.id), 0) AS like_count,
+      COALESCE((SELECT COUNT(*) FROM bookmark_user WHERE post_id = p.id), 0) AS bookmark_count,
+      EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) AS liked_by_current_user,
+      EXISTS (SELECT 1 FROM bookmark_user WHERE post_id = p.id AND user_id = $2) AS bookmarked_by_current_user
     FROM posts p
     JOIN users u ON p.user_id = u.id
     WHERE p.id = $1 AND p.public = TRUE
@@ -167,68 +146,60 @@ export default async function BlogPostPage({ params }) {
     day: 'numeric',
   })
   
-  // ✅ Prepare data for JSON-LD
   const stripHtml = (html) => html?.replace(/<[^>]*>/g, '').trim() || ''
   const plainTextContent = stripHtml(post.content)
   const wordCount = plainTextContent.split(/\s+/).filter(word => word.length > 0).length
 
-  // ✅ JSON-LD structured data for BlogPosting
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": post.title,
-    "description": post.subtitle || plainTextContent.slice(0, 160),
-    "image": post.thumbnailimage || "https://kodesword.vercel.app/logo.png",
-    "datePublished": post.created_at,
-    "dateModified": post.updated_at || post.created_at,
-    "author": {
-      "@type": "Person",
-      "name": post.name || "Krishna Shrivastava",
-      "url": "https://kodesword.vercel.app"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Kode$word",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://kodesword.vercel.app/logo.png"
-      }
-    },
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": `https://kodesword.vercel.app/blog/${id}`
-    },
-    "keywords": post.tag || "programming",
-    "articleBody": plainTextContent.slice(0, 5000), // First 5000 chars
-    "wordCount": wordCount,
-    "url": `https://kodesword.vercel.app/blog/${id}`,
-    "inLanguage": "en-US",
-    "isAccessibleForFree": "True",
-    "interactionStatistic": [
-      {
-        "@type": "InteractionCounter",
-        "interactionType": "https://schema.org/LikeAction",
-        "userInteractionCount": post.like_count || 0
+  // ✅ 2. SCHEMA: Upgraded to 'TechArticle' + 'BreadcrumbList'
+  const schemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle", // Better for code/tutorials than BlogPosting
+      "headline": post.title,
+      "description": post.subtitle || plainTextContent.slice(0, 160),
+      "image": post.thumbnailimage || "https://kodesword.vercel.app/logo.png",
+      "datePublished": post.created_at,
+      "dateModified": post.created_at, // Use created_at as fallback
+      "author": {
+        "@type": "Person",
+        "name": post.name || "Krishna Shrivastava",
+        "url": "https://kodesword.vercel.app"
       },
-      {
-        "@type": "InteractionCounter",
-        "interactionType": "https://schema.org/ReadAction",
-        "userInteractionCount": post.views || 0
+      "publisher": {
+        "@type": "Organization",
+        "name": "Kode$word",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://kodesword.vercel.app/logo.png"
+        }
       },
-      {
-        "@type": "InteractionCounter",
-        "interactionType": "https://schema.org/BookmarkAction",
-        "userInteractionCount": post.bookmark_count || 0
-      }
-    ]
-  };
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `https://kodesword.vercel.app/blog/${id}`
+      },
+      "keywords": post.tag || "programming",
+      "articleBody": plainTextContent.slice(0, 5000),
+      "wordCount": wordCount,
+      "inLanguage": "en-US",
+      "proficiencyLevel": "Beginner", // Helps Google categorize difficulty
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList", // Shows site hierarchy in search results
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kodesword.vercel.app" },
+        { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://kodesword.vercel.app/blog" },
+        { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://kodesword.vercel.app/blog/${id}` }
+      ]
+    }
+  ];
 
   return (
     <>
       {/* ✅ JSON-LD structured data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }}
       />
       
       <Navbar />
@@ -251,11 +222,6 @@ export default async function BlogPostPage({ params }) {
           <div className="absolute inset-0 flex items-end">
             <div className="w-full p-4 sm:p-6 md:p-8 lg:p-12">
               <div className="max-w-5xl mx-auto">
-                {/* <span className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4">
-                  <Tag className="w-3 h-3" />
-                  {post.tag}
-                </span> */}
-
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-2 sm:mb-3 line-clamp-3">
                   {post.title}
                 </h1>
@@ -340,7 +306,7 @@ export default async function BlogPostPage({ params }) {
                       ))
                       
                       :
-                         <Link
+                          <Link
           href={{ 
             pathname: `/blog/${id}`, // your current page
             query: { tag: post.tag.trim() }

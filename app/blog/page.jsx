@@ -1,63 +1,75 @@
-// import BlogCards from '@/components/BlogCards'
-// import Navbar from '@/components/Navbar'
-
-// import React from 'react'
-
-// const page =async () => {
-   
-//   return (
-//     <div>
-//       <Navbar />
-// <BlogCards />
-//     </div>
-//   )
-// }
-
-// export default page
-
-
-
 import BlogCards from '@/components/BlogCards'
 import Navbar from '@/components/Navbar'
 import pool from '@/lib/db'
 
-// ✅ Add metadata for the blog listing page
-export const metadata = {
-  title: 'All Posts - Programming Tutorials & Articles',
-  description: 'Browse all programming tutorials, web development guides, and tech articles on Kode$word. Learn Next.js, React, system design, DSA, and more.',
+// ✅ Dynamic Metadata: Generates keywords from your actual Post Titles
+export async function generateMetadata() {
+  // 1. Core keywords that define your brand (Always keep these)
+  const baseKeywords = [
+    'Kode$word',
+    'Krishna Shrivastava',
+    'Developer Portfolio',
+    'Web Development Projects',
+    'Coding Tutorials'
+  ];
+
+  let dynamicKeywords = [];
   
-  keywords: [
-    'programming tutorials',
-    'coding articles',
-    'web development blog',
-    'tech tutorials',
-    'Next.js guides',
-    'React tutorials',
-    'system design',
-    'DSA tutorials',
-    'developer blog'
-  ],
-  
-  openGraph: {
-    title: 'All Posts - Kode$word Programming Blog',
-    description: 'Browse all programming tutorials, web development guides, and tech articles.',
-    type: 'website',
-    url: 'https://kodesword.vercel.app/blog',
-    siteName: 'Kode$word',
-  },
-  
-  alternates: {
-    canonical: 'https://kodesword.vercel.app/blog',
-  },
-  
-  robots: {
-    index: true,
-    follow: true,
-  },
+  try {
+    // 2. Fetch the last 10 Post Titles & Subtitles to use as keywords
+    // This allows Google to see "Maximum Subarray" or "Spring Boot" as keywords automatically
+    const result = await pool.query(`
+      SELECT title, subtitle 
+      FROM posts 
+      WHERE public = true 
+      ORDER BY created_at DESC 
+      LIMIT 10
+    `);
+
+    // 3. Extract titles and valid subtitles into a list
+    const postKeywords = result.rows.flatMap(post => {
+      const keywords = [post.title];
+      if (post.subtitle && post.subtitle.length < 50) {
+        // Only use short subtitles as keywords to avoid spamming
+        keywords.push(post.subtitle);
+      }
+      return keywords;
+    });
+
+    // 4. Combine Base + Dynamic
+    dynamicKeywords = [...baseKeywords, ...postKeywords];
+
+  } catch (error) {
+    console.error('Error fetching dynamic keywords:', error);
+    dynamicKeywords = baseKeywords; 
+  }
+
+  return {
+    title: 'Blog & Projects | Kode$word - Krishna Shrivastava',
+    description: 'Explore the developer journey of Krishna Shrivastava. Featuring LeetCode solutions, Spring Boot projects, Next.js dev logs, and full-stack engineering insights.',
+    keywords: dynamicKeywords, // <--- Keywords are now your actual post titles
+    
+    openGraph: {
+      title: 'Blog & Projects | Kode$word',
+      description: 'My journey building scalable apps, solving LeetCode problems, and mastering full-stack development.',
+      type: 'website',
+      url: 'https://kodesword.vercel.app/blog',
+      siteName: 'Kode$word',
+    },
+    
+    alternates: {
+      canonical: 'https://kodesword.vercel.app/blog',
+    },
+    
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
 }
 
 const page = async () => {
-  // ✅ Fetch recent posts for JSON-LD (optional but recommended)
+  // ✅ Fetch recent posts for JSON-LD (Removed 'category' from query to fix error)
   let recentPosts = []
   try {
     const result = await pool.query(`
@@ -72,18 +84,18 @@ const page = async () => {
     console.error('Error fetching posts for schema:', error)
   }
 
-  // ✅ JSON-LD for CollectionPage
+  // ✅ JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "All Blog Posts - Kode$word",
-    "description": "Collection of programming tutorials and web development articles",
+    "name": "Blog & Projects | Kode$word",
+    "description": "A collection of coding projects, LeetCode solutions, and technical articles.",
     "url": "https://kodesword.vercel.app/blog",
-    "publisher": {
+    "author": {
       "@type": "Person",
-      "name": "Krishna Shrivastava"
+      "name": "Krishna Shrivastava",
+      "url": "https://kodesword.vercel.app"
     },
-    "inLanguage": "en-US",
     "mainEntity": {
       "@type": "ItemList",
       "itemListElement": recentPosts.map((post, index) => ({
@@ -91,14 +103,13 @@ const page = async () => {
         "position": index + 1,
         "url": `https://kodesword.vercel.app/blog/${post.id}`,
         "name": post.title,
-        "description": post.subtitle
+        "description": post.subtitle || post.title
       }))
     }
   }
 
   return (
     <>
-      {/* ✅ JSON-LD structured data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -115,4 +126,3 @@ const page = async () => {
 }
 
 export default page
-

@@ -17,59 +17,35 @@ export const metadata = {
   metadataBase: new URL('https://kodesword.vercel.app'),
   
   title: {
-    default: 'Kode$word - Programming Tutorials & Developer Blog',
+    default: 'Kode$word | Krishna Shrivastava - Full-Stack Developer Portfolio & Blog',
     template: '%s | Kode$word'
   },
   
-  description: 'Discover in-depth programming tutorials, web development guides, and tech insights. Learn Next.js, React, system design, full-stack development, and modern coding practices.',
+  description: 'The coding journey of Krishna Shrivastava. Explore full-stack projects (Spring Boot, Next.js), LeetCode solutions, and insights into building scalable applications like KriCal and more.',
   
- keywords: [
-  // Primary focus
-  'programming blog',
-  'Kode$word',
-  'Krishna Shrivastava blog',
-  
-  // Web development
-  'web development tutorials',
-  'full-stack development',
-  'frontend development',
-  'backend development',
-  
-  // Frameworks & technologies
-  'Next.js tutorials',
-  'React tutorials',
-  'Node.js',
-  'TypeScript tutorials',
-  'JavaScript tutorials',
-  'React Native',
-  'Spring Boot',
-  
-  // DSA & competitive programming
-  'data structures and algorithms',
-  'DSA tutorials',
-  'LeetCode solutions',
-  'coding interview prep',
-  'competitive programming',
-  
-  // System design & architecture
-  'system design tutorials',
-  'scalability',
-  'microservices',
-  
-  // AI & trending topics
-  'AI tutorials',
-  'machine learning basics',
-  'Python tutorials',
-  
-  // General developer content
-  'coding tips',
-  'developer blog',
-  'programming tips',
-  'tech articles',
-  'software engineering blog'
-],
+  keywords: [
+    // Personal Brand & Core Focus
+    'Krishna Shrivastava',
+    'Kode$word',
+    'Developer Portfolio',
+    'Coding Journey',
+    'Full-Stack Developer India',
+    
+    // Specific Projects (Crucial for "Not just tutorials")
+    'KriCal App',
+    'Spring Boot Backend Project',
+    'Render Deployment',
+    'System Design Examples',
+    
+    // Tech Stack & Solutions
+    'Next.js Projects',
+    'LeetCode Solutions Java',
+    'Maximum Subarray Solution',
+    'Sort Colors LeetCode',
+    'PostgreSQL Database',
+    'React Native Expo'
+  ],
 
-  
   authors: [
     { 
       name: 'Krishna Shrivastava',
@@ -77,7 +53,7 @@ export const metadata = {
     }
   ],
   creator: 'Krishna Shrivastava',
-  publisher: 'Kode$word',
+  publisher: 'Krishna Shrivastava',
   
   robots: {
     index: true,
@@ -92,18 +68,32 @@ export const metadata = {
   },
   
   openGraph: {
-    type: 'website',
+    type: 'profile', // Tells social networks this is a person's profile/portfolio
+    firstName: 'Krishna',
+    lastName: 'Shrivastava',
+    username: 'kodesword',
     locale: 'en_US',
     url: 'https://kodesword.vercel.app',
-    title: 'Kode$word - Programming Tutorials & Developer Blog',
-    description: 'Discover in-depth programming tutorials, web development guides, and tech insights for modern developers.',
+    title: 'Krishna Shrivastava - Developer Portfolio & Blog',
+    description: 'Explore my projects, LeetCode solutions, and full-stack development journey.',
     siteName: 'Kode$word',
+    images: [
+      {
+        url: '/og-image.png', // Make sure you have an image file in your public folder!
+        width: 1200,
+        height: 630,
+        alt: 'Kode$word - Krishna Shrivastava Portfolio',
+      },
+    ],
   },
   
-  alternates: {
-    canonical: 'https://kodesword.vercel.app',
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Krishna Shrivastava | Kode$word',
+    description: 'Building KriCal, solving LeetCode, and mastering System Design.',
+    creator: '@yourtwitterhandle', // Add this if you have one
   },
-  
+
   category: 'technology',
   
   verification: {
@@ -114,28 +104,41 @@ export const metadata = {
   },
   
   other: {
-    'author': 'Krishna Shrivastava',
-    'copyright': '© 2025 Kode$word. All rights reserved.',
+    'copyright': `© ${new Date().getFullYear()} Krishna Shrivastava. All rights reserved.`,
   },
 }
 
 export default function RootLayout({ children }) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    "name": "Kode$word",
-    "url": "https://kodesword.vercel.app",
-    "description": "Programming tutorials and web development guides for modern developers",
-    "publisher": {
-      "@type": "Person",
-      "name": "Krishna Shrivastava"
+  // Enhanced Schema: Connects "Person" (You) to the "WebSite" (Kode$word)
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Kode$word",
+      "url": "https://kodesword.vercel.app",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://kodesword.vercel.app/blog?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
     },
-    "author": {
+    {
+      "@context": "https://schema.org",
       "@type": "Person",
-      "name": "Krishna Shrivastava"
-    },
-    "inLanguage": "en-US"
-  };
+      "name": "Krishna Shrivastava",
+      "url": "https://kodesword.vercel.app",
+      "jobTitle": "Full-Stack Developer",
+      "sameAs": [
+        "https://github.com/yourusername", // Add your real GitHub link here
+        "https://linkedin.com/in/yourusername" // Add your real LinkedIn link here
+      ],
+      "worksFor": {
+        "@type": "Organization",
+        "name": "Self-Employed"
+      },
+      "description": "Full-Stack Developer building projects like KriCal and sharing knowledge on Kode$word."
+    }
+  ];
 
   return (
     <html lang="en">
