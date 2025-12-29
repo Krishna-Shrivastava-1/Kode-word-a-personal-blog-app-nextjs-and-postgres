@@ -15,7 +15,7 @@ function Sheet({
 function SheetTrigger({
   ...props
 }) {
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
+  return <SheetPrimitive.Trigger data-slot="sheet-trigger" suppressHydrationWarning {...props} />;
 }
 
 function SheetClose({
