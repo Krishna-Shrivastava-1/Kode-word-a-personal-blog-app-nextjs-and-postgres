@@ -10,7 +10,7 @@ import Image from 'next/image'
 const Page = () => {
   const { id } = useParams()
   const router = useRouter()
-  
+  const [slug, setslug] = useState('')
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [tag, setTag] = useState('')
@@ -33,6 +33,7 @@ const Page = () => {
         setTag(post.tag || '')
         setContent(post.content || '')
         setBannerUrl(post.thumbnailimage || '')
+        setslug(post.slug || '')
       }
     } catch (error) {
       console.log(error)
@@ -101,6 +102,7 @@ const Page = () => {
 
   // Update post
   const handleUpdate = async () => {
+    if(!slug) return toast.warning("Fill the slug field properly.")
     if (!title.trim()) {
       alert('Title is required')
       return
@@ -118,6 +120,7 @@ const Page = () => {
         tag,
         content,
         thumbnailImage: bannerUrl,
+        slug
       })
 
       if (res.data.success) {
@@ -141,7 +144,15 @@ const Page = () => {
       </div>
     )
   }
-
+ const generateSlug = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')        // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
+    .replace(/\-\-+/g, '-');     // Replace multiple - with single -
+}
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -153,7 +164,11 @@ const Page = () => {
           <Input
             placeholder="Amazing blog post title..."
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+         onChange={(e) => {
+  const newTitle = e.target.value;
+  setTitle(newTitle);
+  setslug(generateSlug(newTitle));
+}}
           />
         </div>
 
@@ -166,7 +181,16 @@ const Page = () => {
             onChange={(e) => setSubtitle(e.target.value)}
           />
         </div>
-
+{/* Slug */}
+        <div className="space-y-2 flex flex-col w-full">
+          <label className="text-sm font-medium text-gray-700">Slug</label>
+          <Input
+          type='text'
+            placeholder="Enter subtitle for your article..."
+            value={slug}
+            readOnly
+          />
+        </div>
         {/* Tag */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Tag</label>

@@ -44,7 +44,7 @@ export async function searchPosts(query) {
     // It handles phrases, quotes, and multiple words gracefully
     const result = await pool.query(`
       SELECT 
-        id, title, subTitle, tag, content,
+        id, title, subTitle, tag,slug, content,
         ts_rank(tsv, websearch_to_tsquery('english', $1)) AS rank
       FROM posts
       WHERE tsv @@ websearch_to_tsquery('english', $1)
@@ -65,7 +65,7 @@ export async function searchPosts(query) {
     try {
       const likeQuery = `%${query.trim()}%`
       const fallbackResult = await pool.query(`
-        SELECT id, title, subTitle, tag, content, 0 AS rank
+        SELECT id, title, subTitle,slug, tag, content, 0 AS rank
         FROM posts
         WHERE (title ILIKE $1 OR content ILIKE $1)
           AND public = true

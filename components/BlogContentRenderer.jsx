@@ -113,7 +113,23 @@ export default function BlogContentRenderer({ content }) {
         .blog-render-container h3:first-child {
           margin-top: 0;
         }
-        
+        /* Text Alignment Classes - ADD THIS */
+.blog-render-container .ql-align-center {
+  text-align: center !important;
+}
+
+.blog-render-container .ql-align-right {
+  text-align: right !important;
+}
+
+.blog-render-container .ql-align-left {
+  text-align: left !important;
+}
+
+.blog-render-container .ql-align-justify {
+  text-align: justify !important;
+}
+
         /* Text Styles */
         .blog-render-container p { 
           margin: 0 0 0.85rem 0;
@@ -201,6 +217,48 @@ export default function BlogContentRenderer({ content }) {
         .blog-render-container > *:last-child {
           margin-bottom: 0 !important;
         }
+
+        /* Add this to your existing <style jsx global> block */
+
+/* Table Wrapper - Must wrap the entire table */
+.blog-render-container .quill-better-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+ 
+}
+
+/* Table Styles */
+.blog-render-container table {
+  border-collapse: collapse;
+  table-layout: auto; /* Changed from fixed to auto */
+  width: 100%;
+  border: 1px solid black;
+}
+
+.blog-render-container table td,
+.blog-render-container table th {
+  border: 1px solid black;
+  padding: 0.75rem;
+  vertical-align: top;
+  min-width: 50px;
+  max-width: 300px; /* Prevents cells from becoming too wide */
+  word-wrap: break-word; /* Break long words */
+  word-break: break-word; /* Force break if needed */
+  overflow-wrap: break-word; /* Modern alternative */
+  hyphens: auto; /* Add hyphens for better breaks */
+}
+
+.blog-render-container table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  text-align: left;
+}
+
+.blog-render-container table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+
       `}</style>
 
       <div className="blog-render-container" onClick={handleContainerClick}>

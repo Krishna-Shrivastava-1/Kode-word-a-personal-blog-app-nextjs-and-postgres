@@ -6,7 +6,7 @@ export default async function sitemap() {
   try {
     // Fetch all public blog posts
     const result = await pool.query(`
-      SELECT id, created_at
+      SELECT slug, created_at
       FROM posts 
       WHERE public = true 
       ORDER BY created_at DESC
@@ -14,7 +14,7 @@ export default async function sitemap() {
     
     // Create sitemap entry for each blog post
     const posts = result.rows.map((post) => ({
-      url: `${baseUrl}/blog/${post.id}`,
+      url: `${baseUrl}/blog/${post.slug}`,
       lastModified:  post.created_at,
       changeFrequency: 'weekly',
       priority: 0.8,

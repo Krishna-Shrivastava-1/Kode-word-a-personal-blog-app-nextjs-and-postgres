@@ -138,7 +138,7 @@ const SearchBox = () => {
                     key={post.id} 
                     className='border p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors'
                     onClick={() => {
-                      window.location.href = `/blog/${post.id}`
+                      window.location.href = `/blog/${post.slug||post.id}`
                       setOpen(false)
                     }}
                   >
@@ -156,7 +156,7 @@ const SearchBox = () => {
                       post.tag.split(',')?.map((e,ind)=>(
                           <span
                           key={ind}
-          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+         className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
          
         >
           <Tag className="w-3 h-3" />
@@ -166,7 +166,7 @@ const SearchBox = () => {
                       
                       :
                          <span
-          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
  
         >
           <Tag className="w-3 h-3" />

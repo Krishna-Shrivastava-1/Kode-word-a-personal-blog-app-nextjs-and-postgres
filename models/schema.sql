@@ -18,6 +18,7 @@
         image_urls TEXT[],
         user_id INTEGER REFERENCES users(id),
         created_at TIMESTAMP DEFAULT NOW()
+        
       )
 
 -- // Comments

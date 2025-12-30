@@ -36,6 +36,7 @@ async function setupDatabase() {
         public BOOLEAN NOT NULL DEFAULT FALSE,
         user_id UUID REFERENCES users(id),
         views INTEGER DEFAULT 0,
+        slug VARCHAR(255) UNIQUE NOT NULL,
         tsv tsvector GENERATED ALWAYS AS(
         to_tsvector('english',
         coalesce(title,'')||' '||
@@ -47,6 +48,7 @@ async function setupDatabase() {
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
+   
 // await pool.query(`
 //   ALTER TABLE posts
 //   ADD COLUMN tsv tsvector 
@@ -151,6 +153,7 @@ async function setupDatabase() {
     console.log('📋 Tables:', tables.rows.map(t => t.table_name).join(', '));
 
   } catch (error) {
+    console.log(error)
     console.error('❌ Schema Error:', error.message);
   }
 }

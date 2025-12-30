@@ -10,7 +10,8 @@ export async function generateMetadata() {
     'Krishna Shrivastava',
     'Developer Portfolio',
     'Web Development Projects',
-    'Coding Tutorials'
+    'Coding Tutorials',
+    'Kodesword'
   ];
 
   let dynamicKeywords = [];
@@ -73,7 +74,7 @@ const page = async () => {
   let recentPosts = []
   try {
     const result = await pool.query(`
-      SELECT id, title, subtitle, created_at 
+      SELECT slug, title, subtitle, created_at 
       FROM posts 
       WHERE public = true 
       ORDER BY created_at DESC 
@@ -101,7 +102,7 @@ const page = async () => {
       "itemListElement": recentPosts.map((post, index) => ({
         "@type": "ListItem",
         "position": index + 1,
-        "url": `https://kodesword.vercel.app/blog/${post.id}`,
+        "url": `https://kodesword.vercel.app/blog/${post.slug}`,
         "name": post.title,
         "description": post.subtitle || post.title
       }))

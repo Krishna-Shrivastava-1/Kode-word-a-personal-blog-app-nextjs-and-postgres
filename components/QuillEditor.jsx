@@ -141,7 +141,7 @@ export default function QuillEditor({ content = '', onChange }) {
         [{ align: [] }],
         ['blockquote', 'code-block'],
         ['link', 'image', 'video'],
-        ['clean'],
+        ['clean'],['table']
       ],
       handlers: { 
         image: imageHandler,

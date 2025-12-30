@@ -12,7 +12,7 @@ import { QrCode } from "lucide-react";
 export async function GridBackgroundDemo() {
   const isuserauthor = await Authorized()
     const result = await pool.query(`
-    SELECT p.title,p.id,p.subTitle,p.thumbnailimage, u.name 
+    SELECT p.title,p.slug,p.id,p.subTitle,p.thumbnailimage, u.name 
     FROM posts p
     JOIN users u ON p.user_id = u.id
     WHERE p.public = TRUE

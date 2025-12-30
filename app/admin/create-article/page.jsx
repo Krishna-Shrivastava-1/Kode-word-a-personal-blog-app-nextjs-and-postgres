@@ -11,6 +11,7 @@ const Page = () => {
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [tag, setTag] = useState('')
+  const [slug, setslug] = useState('')
   const [content, setContent] = useState('<p>Start writing here...</p>')
   const [bannerUrl, setBannerUrl] = useState('')
   const [uploadingBanner, setUploadingBanner] = useState(false)
@@ -91,6 +92,7 @@ useEffect(() => {
 
   const handlePostCreation = async() => {
    try {
+    if(!slug) return toast.warning("Fill the slug field properly.")
     if(!title || !subtitle || !bannerUrl || !tag || !content || !userData?.id) return toast.warning("Fill all the fields properly.")
     const resp = await axios.post('/api/post/createpost',{
       title,
@@ -98,14 +100,16 @@ useEffect(() => {
       thumbnailImage:bannerUrl,
       tag,
       content,
-      userid:userData?.id
+      userid:userData?.id,
+      slug
     })
     if(resp?.data?.success){
 
       toast.success("Article Created Successfully")
       router.back()
     }else{
-      toast.error("Article is not Created Check Server.")
+      toast.error(`Article is not Created due to ${resp?.data?.message}`)
+      
     }
    } catch (error) {
     console.log(error.message)
@@ -113,6 +117,16 @@ useEffect(() => {
    }
   }
 
+ const generateSlug = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')        // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
+    .replace(/\-\-+/g, '-');     // Replace multiple - with single -
+}
+  
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -124,7 +138,11 @@ useEffect(() => {
           <Input
             placeholder="Amazing blog post title..."
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+onChange={(e) => {
+  const newTitle = e.target.value;
+  setTitle(newTitle);
+  setslug(generateSlug(newTitle));
+}}
           />
         </div>
 
@@ -135,6 +153,16 @@ useEffect(() => {
             placeholder="Enter subtitle for your article..."
             value={subtitle}
             onChange={(e) => setSubtitle(e.target.value)}
+          />
+        </div>
+        {/* Slug */}
+        <div className="space-y-2 flex flex-col w-full">
+          <label className="text-sm font-medium text-gray-700">Slug</label>
+          <Input
+          type='text'
+            placeholder="Enter subtitle for your article..."
+            value={slug}
+            readOnly
           />
         </div>
 

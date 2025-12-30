@@ -24,12 +24,13 @@ export async function generateMetadata({ params }) {
         p.subtitle, 
         p.tag, 
         p.content, 
+        p.slug,
         p.thumbnailimage,
         p.created_at, 
         u.name as author_name
       FROM posts p
       JOIN users u ON p.user_id = u.id
-      WHERE p.id = $1 AND p.public = TRUE`,
+      WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE`,
       [id]
     )
 
@@ -56,9 +57,11 @@ export async function generateMetadata({ params }) {
       `kodesword ${post.tag.toLowerCase()}`,    // "kodesword java"
       post.tag.toLowerCase(),
       'programming tutorial',
-      'tech article'
+      'tech article',
+      'kodesword blog',
+      'kodesword article',
+      'kodesword post'
     ].filter(Boolean).slice(0, 15)
-
     return {
       title: `${post.title}`, // Standard SEO format: Title | Brand
       description,
@@ -76,7 +79,7 @@ export async function generateMetadata({ params }) {
         modifiedTime: post.created_at, // Fallback since updated_at missing
         authors: [post.author_name || 'Krishna Shrivastava'],
         tags: post.tag ? post.tag.split(',') : [],
-        url: `https://kodesword.vercel.app/blog/${id}`,
+        url: `https://kodesword.vercel.app/blog/${post.slug}`,
         siteName: 'Kode$word',
         images: post.thumbnailimage ? [
           {
@@ -89,7 +92,7 @@ export async function generateMetadata({ params }) {
       },
       
       alternates: {
-        canonical: `https://kodesword.vercel.app/blog/${id}`, // CRITICAL FOR INDEXING
+        canonical: `https://kodesword.vercel.app/blog/${post.slug}`, // CRITICAL FOR INDEXING
       },
       
       robots: {
@@ -105,6 +108,7 @@ export async function generateMetadata({ params }) {
         'article:tag': post.tag || 'Programming',
       },
     }
+    
   } catch (error) {
     console.error('Error generating metadata:', error)
     return {
@@ -112,6 +116,7 @@ export async function generateMetadata({ params }) {
       description: 'An error occurred while loading this blog post.'
     }
   }
+ 
 }
 
 export default async function BlogPostPage({ params }) {
@@ -129,7 +134,7 @@ export default async function BlogPostPage({ params }) {
       EXISTS (SELECT 1 FROM bookmark_user WHERE post_id = p.id AND user_id = $2) AS bookmarked_by_current_user
     FROM posts p
     JOIN users u ON p.user_id = u.id
-    WHERE p.id = $1 AND p.public = TRUE
+    WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE
     `,
     [id, currUser?.user?.id]
   )
@@ -175,7 +180,7 @@ export default async function BlogPostPage({ params }) {
       },
       "mainEntityOfPage": {
         "@type": "WebPage",
-        "@id": `https://kodesword.vercel.app/blog/${id}`
+        "@id": `https://kodesword.vercel.app/blog/${post.slug}`
       },
       "keywords": post.tag || "programming",
       "articleBody": plainTextContent.slice(0, 5000),
@@ -189,7 +194,7 @@ export default async function BlogPostPage({ params }) {
       "itemListElement": [
         { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kodesword.vercel.app" },
         { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://kodesword.vercel.app/blog" },
-        { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://kodesword.vercel.app/blog/${id}` }
+        { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://kodesword.vercel.app/blog/${post.slug }` }
       ]
     }
   ];
@@ -263,19 +268,19 @@ export default async function BlogPostPage({ params }) {
                   <LikeButton
                     likebyCurrUser={post?.liked_by_current_user}
                     likeCount={post.like_count}
-                    postId={id}
+                    postId={post.id}
                   />
                 </div>
                 <div className="flex items-center gap-2">
                   <BookmarkButton
                     likebyCurrUser={post?.bookmarked_by_current_user}
                     likeCount={post.bookmark_count}
-                    postId={id}
+                    postId={post.id}
                   />
                 </div>
                 <div className="flex items-center gap-2">
                   <ShareButton 
-                    postId={id} 
+                    postId={post.slug} 
                     title={post.title} 
                     description={post.subtitle}
                   />
@@ -294,10 +299,10 @@ export default async function BlogPostPage({ params }) {
                           <Link
           key={ind}
           href={{ 
-            pathname: `/blog/${id}`, // your current page
+            pathname: `/blog/${post.slug}`, // your current page
             query: { tag: e.trim() }
           }}
-          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
           scroll={false} // prevents scroll jump
         >
           <Tag className="w-3 h-3" />
@@ -308,10 +313,10 @@ export default async function BlogPostPage({ params }) {
                       :
                           <Link
           href={{ 
-            pathname: `/blog/${id}`, // your current page
+            pathname: `/blog/${post.slug}`, // your current page
             query: { tag: post.tag.trim() }
           }}
-          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs font-semibold bg-blue-600 text-white mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
           scroll={false} // prevents scroll jump
         >
           <Tag className="w-3 h-3" />

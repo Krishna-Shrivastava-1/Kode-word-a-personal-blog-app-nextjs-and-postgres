@@ -5,20 +5,20 @@ import { NextResponse } from 'next/server'
 export async function PATCH(req, { params }) {
   try {
     const { id } = await params
-    const { title, subtitle, tag, content, thumbnailImage } = await req.json()
+    const { title, subtitle, tag, content, thumbnailImage,slug } = await req.json()
 
-    if (!title || !content) {
+    if (!title || !content || !slug) {
       return NextResponse.json(
-        { success: false, message: 'Title and content are required' },
+        { success: false, message: 'Title, content and slug are required' },
         { status: 400 }
       )
     }
 
     await pool.query(
       `UPDATE posts 
-       SET title = $1, subTitle = $2, tag = $3, content = $4, thumbnailImage = $5
-       WHERE id = $6`,
-      [title, subtitle, tag, content, thumbnailImage, id]
+       SET title = $1, subTitle = $2, tag = $3, content = $4, thumbnailImage = $5, slug=$6
+       WHERE id = $7`,
+      [title, subtitle, tag, content, thumbnailImage,slug, id]
     )
 
     return NextResponse.json({

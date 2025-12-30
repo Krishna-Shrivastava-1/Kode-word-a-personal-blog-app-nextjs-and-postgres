@@ -1,12 +1,12 @@
 import pool from "@/lib/db";
 
-export async function createPost(title,content,userid,tag,thumbnailImage,subTitle) {
+export async function createPost(title,content,userid,tag,thumbnailImage,subTitle,slug) {
     try {
         const result = await pool.query(`
-           INSERT INTO posts (title,content,user_id,tag,thumbnailImage,subTitle)
-           VALUES ($1,$2,$3,$4,$5,$6)
-           RETURNING title,id,content,views,created_at,user_id,tag,thumbnailImage,subTitle
-            `, [title,content,userid,tag,thumbnailImage,subTitle])
+           INSERT INTO posts (title,content,user_id,tag,thumbnailImage,subTitle,slug)
+           VALUES ($1,$2,$3,$4,$5,$6,$7)
+           RETURNING title,id,content,views,created_at,user_id,tag,thumbnailImage,subTitle,slug
+            `, [title,content,userid,tag,thumbnailImage,subTitle,slug])
         return result.rows[0];
     } catch (error) {
         console.log(error.message)
@@ -17,7 +17,7 @@ export async function createPost(title,content,userid,tag,thumbnailImage,subTitl
 export async function getPostbyId(id) {
        try {
         const result = await pool.query(`
-            Select title,tag,content,thumbnailImage,subTitle,created_at from posts where id = $1
+            Select title,tag,content,thumbnailImage,subTitle,created_at,slug from posts where id = $1
             `, [id])
         return result.rows[0];
     } catch (error) {

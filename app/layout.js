@@ -21,12 +21,13 @@ export const metadata = {
     template: '%s | Kode$word'
   },
   
-  description: 'The coding journey of Krishna Shrivastava. Explore full-stack projects (Spring Boot, Next.js), LeetCode solutions, and insights into building scalable applications like KriCal and more.',
+  description: 'The coding journey of Krishna Shrivastava. Explore full-stack projects (Spring Boot, Next.js), LeetCode solutions, and insights into building scalable applications like krido and more.',
   
   keywords: [
     // Personal Brand & Core Focus
     'Krishna Shrivastava',
     'Kode$word',
+    'Kodesword',
     'Developer Portfolio',
     'Coding Journey',
     'Full-Stack Developer India',
@@ -43,7 +44,9 @@ export const metadata = {
     'Maximum Subarray Solution',
     'Sort Colors LeetCode',
     'PostgreSQL Database',
-    'React Native Expo'
+    'React Native Expo',
+    'Mongodb',
+    'my first'
   ],
 
   authors: [
@@ -129,14 +132,14 @@ export default function RootLayout({ children }) {
       "url": "https://kodesword.vercel.app",
       "jobTitle": "Full-Stack Developer",
       "sameAs": [
-        "https://github.com/yourusername", // Add your real GitHub link here
-        "https://linkedin.com/in/yourusername" // Add your real LinkedIn link here
+        "https://github.com/Krishna-Shrivastava-1", // Add your real GitHub link here
+        "https://linkedin.com/in/krishna-shrivastava-62b72129a" // Add your real LinkedIn link here
       ],
       "worksFor": {
         "@type": "Organization",
         "name": "Self-Employed"
       },
-      "description": "Full-Stack Developer building projects like KriCal and sharing knowledge on Kode$word."
+      "description": "Full-Stack Developer building projects like Krido and sharing knowledge on Kode$word."
     }
   ];
 
@@ -148,7 +151,7 @@ export default function RootLayout({ children }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body
+      <body suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ContextProvider>

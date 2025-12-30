@@ -1,13 +1,15 @@
+import pool from "@/lib/db";
 import { createPost } from "@/models/posts";
 import { createUser, getUserbyID } from "@/models/users";
 import { NextResponse } from "next/server";
+import { success } from "zod";
 
 
 export async function POST(req, res) {
   try {
-    const { title, content, userid, tag,thumbnailImage,subtitle } = await req.json();
+    const { title, content, userid, tag,thumbnailImage,subtitle,slug } = await req.json();
 
-    console.log(userid);
+    // console.log(userid);
     const userExist = await getUserbyID(userid);
 
     if (!userExist) {
@@ -17,10 +19,20 @@ export async function POST(req, res) {
       });
     }
 
-
+    const testSlugExist = await pool.query(`
+      SELECT slug FROM posts WHERE slug = $1
+      `,[slug])
+     
+if(testSlugExist.rows[0]){
+  return NextResponse.json({
+    message:'Slug Already Exist Cannot Create Post Change Title',
+    success:false,
+    status:401
+  })
+}
 
     // Pass these image URLs along with other post data
-    const postCreation = await createPost(title, content, userid, tag,thumbnailImage,subtitle);
+    const postCreation = await createPost(title, content, userid, tag,thumbnailImage,subtitle,slug);
 
     if (!postCreation) {
       return NextResponse.json({
