@@ -1,9 +1,8 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Calendar, User, Tag, Eye } from 'lucide-react'
+import { Calendar, User, Tag, Eye, Linkedin, Github } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import pool from '@/lib/db'
-import PostViewCounter from '@/components/PostViewCounter'
 import LikeButton from '@/components/LikeButton'
 import { Authorized } from '@/controllers/authControl'
 import BlogContentRenderer from '@/components/BlogContentRenderer'
@@ -11,115 +10,11 @@ import BookmarkButton from '@/components/BookmarkButton'
 import ScrollProgress from '@/components/ScrollProgress'
 import ShareButton from '@/components/ShareButton'
 import Link from 'next/link'
+import { IconBrandLinkedin } from '@tabler/icons-react'
 
-// ✅ 1. SEO METADATA: Optimized for "Title Search" and Indexing
-export async function generateMetadata({ params }) {
-  const { id } = await params
 
-  try {
-    // Removed 'updated_at' to prevent crash
-    const result = await pool.query(
-      `SELECT 
-        p.title, 
-        p.subtitle, 
-        p.tag, 
-        p.content, 
-        p.slug,
-        p.thumbnailimage,
-        p.created_at, 
-        u.name as author_name
-      FROM posts p
-      JOIN users u ON p.user_id = u.id
-      WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE`,
-      [id]
-    )
 
-    if (result.rows.length === 0) {
-      return {
-        title: 'Post Not Found | Kode$word',
-        description: 'The blog post you are looking for could not be found.'
-      }
-    }
-
-    const post = result.rows[0]
-    
-    // Clean description for Google snippets
-    const stripHtml = (html) => html?.replace(/<[^>]*>/g, '').trim() || ''
-    const description = post.subtitle 
-      ? stripHtml(post.subtitle).slice(0, 155)
-      : stripHtml(post.content).slice(0, 155)
-
-    // SMART KEYWORDS: Targeting "Solution" searches
-    const postKeywords = [
-      'kodesword', 
-      post.title.toLowerCase(),                 // "maximum subarray"
-      `${post.title.toLowerCase()} solution`,   // "maximum subarray solution"
-      `kodesword ${post.tag.toLowerCase()}`,    // "kodesword java"
-      post.tag.toLowerCase(),
-      'programming tutorial',
-      'tech article',
-      'kodesword blog',
-      'kodesword article',
-      'kodesword post'
-    ].filter(Boolean).slice(0, 15)
-    return {
-      title: `${post.title}`, // Standard SEO format: Title | Brand
-      description,
-      keywords: postKeywords,
-      
-      authors: [{ name: post.author_name || 'Krishna Shrivastava' }],
-      creator: post.author_name || 'Krishna Shrivastava',
-      publisher: 'Kode$word',
-      
-      openGraph: {
-        title: post.title,
-        description,
-        type: 'article',
-        publishedTime: post.created_at,
-        modifiedTime: post.created_at, // Fallback since updated_at missing
-        authors: [post.author_name || 'Krishna Shrivastava'],
-        tags: post.tag ? post.tag.split(',') : [],
-        url: `https://kodesword.vercel.app/blog/${post.slug}`,
-        siteName: 'Kode$word',
-        images: post.thumbnailimage ? [
-          {
-            url: post.thumbnailimage,
-            width: 1200,
-            height: 630,
-            alt: post.title,
-          }
-        ] : undefined,
-      },
-      
-      alternates: {
-        canonical: `https://kodesword.vercel.app/blog/${post.slug}`, // CRITICAL FOR INDEXING
-      },
-      
-      robots: {
-        index: true,
-        follow: true,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-      
-      other: {
-        'article:published_time': post.created_at,
-        'article:author': post.author_name || 'Krishna Shrivastava',
-        'article:tag': post.tag || 'Programming',
-      },
-    }
-    
-  } catch (error) {
-    console.error('Error generating metadata:', error)
-    return {
-      title: 'Error | Kode$word',
-      description: 'An error occurred while loading this blog post.'
-    }
-  }
- 
-}
-
-export default async function BlogPostPage({ params }) {
+const  Page =async({ params })=> {
   const { id } = await params
   const currUser = await Authorized()
 
@@ -207,11 +102,11 @@ export default async function BlogPostPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(schemas) }}
       />
       
-      <Navbar />
-      <ScrollProgress />
-      <PostViewCounter postId={post.id} />
+      {/* <Navbar /> */}
+      {/* <ScrollProgress /> */}
+   
 
-      <article className="min-h-screen md:mt-0 mt-16 bg-gray-50">
+      <article className="min-h-screen  bg-gray-50">
         {/* Hero Section */}
         <div className="relative w-full aspect-[16/7] sm:aspect-[16/6] object-cover bg-neutral-900 overflow-hidden bg-gradient-to-t from-neutral-900/90 via-white to-transparent">
           <Image
@@ -285,6 +180,7 @@ export default async function BlogPostPage({ params }) {
                     description={post.subtitle}
                   />
                 </div>
+              
               </div>
               
             </div>
@@ -326,23 +222,23 @@ export default async function BlogPostPage({ params }) {
                     </div>
            </div>
            <div className="max-w-4xl px-4 mx-auto  ">
-                       <div className="flex justify-center items-center mb-4 mt-2" >
-                                  <div className=" mx-3">
-                             <Link href='https://www.linkedin.com/in/krishna-shrivastava-62b72129a/' target='_blank'><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="auto" viewBox="0 0 48 48">
-           <path fill="#0288D1" d="M42,37c0,2.762-2.238,5-5,5H11c-2.761,0-5-2.238-5-5V11c0-2.762,2.239-5,5-5h26c2.762,0,5,2.238,5,5V37z"></path><path fill="#FFF" d="M12 19H17V36H12zM14.485 17h-.028C12.965 17 12 15.888 12 14.499 12 13.08 12.995 12 14.514 12c1.521 0 2.458 1.08 2.486 2.499C17 15.887 16.035 17 14.485 17zM36 36h-5v-9.099c0-2.198-1.225-3.698-3.192-3.698-1.501 0-2.313 1.012-2.707 1.99C24.957 25.543 25 26.511 25 27v9h-5V19h5v2.616C25.721 20.5 26.85 19 29.738 19c3.578 0 6.261 2.25 6.261 7.274L36 36 36 36z"></path>
-           </svg></Link>
-                             
-                           </div>
-                           <div className=" mx-3">
-                             <Link href='https://github.com/Krishna-Shrivastava-1' target='_blank'><Image className='min-w-[30px]' src='https://img.icons8.com/?size=100&id=3tC9EQumUAuq&format=png&color=000000' alt='Github icon' width={30} height={100} /> </Link>
-                             
-                           </div>
-                               </div>
-                      </div>
+            <div className="flex justify-center items-center mb-4 mt-2" >
+                       <div className=" mx-3">
+                  <Link href='https://www.linkedin.com/in/krishna-shrivastava-62b72129a/' target='_blank'><svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="auto" viewBox="0 0 48 48">
+<path fill="#0288D1" d="M42,37c0,2.762-2.238,5-5,5H11c-2.761,0-5-2.238-5-5V11c0-2.762,2.239-5,5-5h26c2.762,0,5,2.238,5,5V37z"></path><path fill="#FFF" d="M12 19H17V36H12zM14.485 17h-.028C12.965 17 12 15.888 12 14.499 12 13.08 12.995 12 14.514 12c1.521 0 2.458 1.08 2.486 2.499C17 15.887 16.035 17 14.485 17zM36 36h-5v-9.099c0-2.198-1.225-3.698-3.192-3.698-1.501 0-2.313 1.012-2.707 1.99C24.957 25.543 25 26.511 25 27v9h-5V19h5v2.616C25.721 20.5 26.85 19 29.738 19c3.578 0 6.261 2.25 6.261 7.274L36 36 36 36z"></path>
+</svg></Link>
+                  
+                </div>
+                <div className=" mx-3">
+                  <Link href='https://github.com/Krishna-Shrivastava-1' target='_blank'><Image className='min-w-[30px]' src='https://img.icons8.com/?size=100&id=3tC9EQumUAuq&format=png&color=000000' alt='Github icon' width={30} height={100} /> </Link>
+                  
+                </div>
+                    </div>
+           </div>
         </div>
 
         {/* ✅ Content with itemProp for structured data */}
-        <div className="max-w-4xl mx-auto px-2 py-8 sm:py-12">
+        <div className="max-w-4xl mx-auto  px-2 py-8 sm:py-8">
           <div className="bg-white rounded-2xl overflow-x-auto text-wrap shadow-sm p-6 sm:p-8 lg:p-12" itemProp="articleBody">
             <BlogContentRenderer content={post.content} />
           </div>
@@ -351,3 +247,4 @@ export default async function BlogPostPage({ params }) {
     </>
   )
 }
+export default Page
