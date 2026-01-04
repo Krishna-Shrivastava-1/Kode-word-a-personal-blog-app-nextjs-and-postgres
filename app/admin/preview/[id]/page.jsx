@@ -29,7 +29,7 @@ const  Page =async({ params })=> {
       EXISTS (SELECT 1 FROM bookmark_user WHERE post_id = p.id AND user_id = $2) AS bookmarked_by_current_user
     FROM posts p
     JOIN users u ON p.user_id = u.id
-    WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE
+    WHERE (p.id::text = $1 OR p.slug = $1)
     `,
     [id, currUser?.user?.id]
   )
