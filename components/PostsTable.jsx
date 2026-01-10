@@ -104,7 +104,7 @@ const PostsTable = ({ postData, onUpdate }) => {
                   width={80}
                   height={40}
                   src={e?.thumbnailimage}
-                  className="rounded-md object-cover"
+                  className="rounded-md object-cover"         
                 />
               </TableCell>
 

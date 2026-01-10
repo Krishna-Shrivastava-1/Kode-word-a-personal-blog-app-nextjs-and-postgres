@@ -200,7 +200,16 @@ const Page = () => {
             onChange={(e) => setTag(e.target.value)}
           />
         </div>
-
+   <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            Article Banner Image Via Url
+          </label>
+          <Input
+            placeholder="https://bannerimage.img"
+            value={bannerUrl}
+            onChange={(e) => setBannerUrl(e.target.value)}
+          />
+        </div>
         {/* Banner image */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-gray-700">
@@ -231,6 +240,7 @@ const Page = () => {
             <div className="mt-2">
               <p className="text-xs text-gray-600 mb-1">Banner preview:</p>
               <Image
+              
                 src={bannerUrl}
                 alt="Banner preview"
                 width={800}
