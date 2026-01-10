@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ContextProvider } from "@/components/ContextAPI";
-
+import { Analytics } from "@vercel/analytics/next"
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -156,6 +156,7 @@ export default function RootLayout({ children }) {
       >
         <ContextProvider>
           {children}
+          <Analytics />
           <Toaster richColors />
         </ContextProvider>
       </body>
