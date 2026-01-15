@@ -29,7 +29,7 @@ export async function getPostbyId(id) {
 export async function getAllPosts() {
     try {
         const result = await pool.query(`
-            SELECT p.id,p.title,p.content,p.user_id,p.tag,p.thumbnailImage,p.subTitle,p.created_at,p.views ,p.public, 
+            SELECT p.id,p.title,p.content,p.user_id,p.tag,p.thumbnailImage,p.subTitle,p.created_at,p.views,p.slug ,p.public, 
             u.name
             FROM posts p
             JOIN users u ON user_id = u.id
