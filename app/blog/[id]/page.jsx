@@ -11,6 +11,7 @@ import BookmarkButton from '@/components/BookmarkButton'
 import ScrollProgress from '@/components/ScrollProgress'
 import ShareButton from '@/components/ShareButton'
 import Link from 'next/link'
+import RecommendationSection from '@/components/RecommendationSection'
 
 // ✅ 1. SEO METADATA: Optimized for "Title Search" and Indexing
 export async function generateMetadata({ params }) {
@@ -198,7 +199,8 @@ export default async function BlogPostPage({ params }) {
       ]
     }
   ];
-
+const getRecommendation=await fetch(`${process.env.RECOMMEND_URL}/${post.id}`,{method:"GET"})
+const recommendationData=await getRecommendation.json()
   return (
     <>
       {/* ✅ JSON-LD structured data */}
@@ -346,6 +348,9 @@ export default async function BlogPostPage({ params }) {
           <div className="bg-white rounded-2xl overflow-x-auto text-wrap shadow-sm p-6 sm:p-8 lg:p-12" itemProp="articleBody">
             <BlogContentRenderer content={post.content} />
           </div>
+        </div>
+        <div className=''>
+          <RecommendationSection recommendationData={recommendationData} />
         </div>
       </article>
     </>
