@@ -15,16 +15,19 @@ export async function createPost(title,content,userid,tag,thumbnailImage,subTitl
 }
 
 export async function getPostbyId(id) {
-       try {
+    try {
         const result = await pool.query(`
-            Select title,tag,content,thumbnailImage,subTitle,created_at,slug from posts where id = $1
-            `, [id])
+            SELECT title, tag, content, thumbnailImage, subTitle, created_at, slug 
+            FROM posts 
+            WHERE id::text = $1 OR slug = $1
+        `, [id]);
         return result.rows[0];
     } catch (error) {
-        console.log(error.message)
+        console.error("Database Error:", error.message);
         throw error;
     }
 }
+
 
 export async function getAllPosts() {
     try {
