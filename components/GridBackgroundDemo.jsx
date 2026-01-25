@@ -56,8 +56,7 @@ export async function GridBackgroundDemo() {
     
     {/* Subheading - MOBILE FIRST */}
     <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 xs:text-base sm:text-lg md:text-xl break-words hyphens-auto">
-      Share your journey, inspire others, and build a community of thinkers. 
-      Every post is a step toward creating meaningful connections and lasting change.
+     Documenting my journey in software development—sharing insights, lessons, and ideas through carefully crafted posts that reflect how I think, build, and grow.
     </p>
     
     {/* CTA Buttons - FULL RESPONSIVE */}

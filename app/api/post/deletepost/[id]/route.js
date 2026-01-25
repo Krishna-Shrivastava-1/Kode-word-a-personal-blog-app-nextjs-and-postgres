@@ -24,7 +24,7 @@ export async function DELETE(req, { params }) {
 
     // 3. Get post details (for images)
     const postResult = await pool.query(
-      'SELECT content, thumbnailimage FROM posts WHERE id = $1',
+      'SELECT content, thumbnailimage,slug FROM posts WHERE id = $1',
       [id]
     )
 
@@ -72,6 +72,13 @@ export async function DELETE(req, { params }) {
       }
     }
 
+const resp = await fetch(
+  `${process.env.DELETEEMBEDINGOFBLOG}/${post.slug}`,
+  { method: "DELETE" }
+)
+
+  const data = await resp.json()
+  // console.log(data)
     // 6. Delete post (CASCADE deletes bookmarks & likes)
     await pool.query('DELETE FROM posts WHERE id = $1', [id])
 

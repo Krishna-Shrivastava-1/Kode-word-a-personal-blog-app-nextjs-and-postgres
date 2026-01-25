@@ -20,7 +20,7 @@ const Page = () => {
   const [removingBanner, setRemovingBanner] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
-
+const [prevSlug, setprevSlug] = useState('')
   // Fetch post data to edit
   const fetchPostDatatoEdit = async () => {
     try {
@@ -34,6 +34,7 @@ const Page = () => {
         setContent(post.content || '')
         setBannerUrl(post.thumbnailimage || '')
         setslug(post.slug || '')
+        setprevSlug(post.slug || '')
       }
     } catch (error) {
       console.log(error)
@@ -120,7 +121,8 @@ const Page = () => {
         tag,
         content,
         thumbnailImage: bannerUrl,
-        slug
+        slug,
+        prevSlug
       })
 
       if (res.data.success) {

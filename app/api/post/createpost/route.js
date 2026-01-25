@@ -40,7 +40,20 @@ if(testSlugExist.rows[0]){
         success: false,
       });
     }
-
+    const resp = await fetch(process.env.SENDBLOGIDTOCHAT,{
+    method:'POST',
+     headers: {
+        "Content-Type": "application/json",
+      },
+    body:JSON.stringify({blog_id:postCreation.slug})
+  })
+const data = await resp.json()
+// console.log(data)
+if(data?.chunks_stored ==0){
+return NextResponse.json({
+  message:`Error in creating embedding of this blog ${postCreation}`
+})
+}
     return NextResponse.json({
       message: "Post Created Successfully",
       post: postCreation,

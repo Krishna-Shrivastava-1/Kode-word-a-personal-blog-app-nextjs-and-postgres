@@ -2,7 +2,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react"
+import { MessageCircle, PanelLeftIcon, X } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -221,30 +221,61 @@ function Sidebar({
   );
 }
 
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}) {
-  const { toggleSidebar } = useSidebar()
+// function SidebarTrigger({
+//   className,
+//   onClick,
+//   ...props
+// }) {
+//   const { toggleSidebar } = useSidebar()
+
+//   return (
+//     <Button
+//       data-sidebar="trigger"
+//       data-slot="sidebar-trigger"
+//       variant="ghost"
+//       size="icon"
+//       className={cn("size-7 fixed right-10 bottom-10 z-40 ", className)}
+//       onClick={(event) => {
+//         onClick?.(event)
+//         toggleSidebar()
+//       }}
+//       {...props}>
+//       <PanelLeftIcon />
+//       <span className="sr-only">Toggle Sidebar</span>
+//     </Button>
+//   );
+// }
+
+function SidebarTrigger({ className, onClick, ...props }) {
+  const { toggleSidebar,open  } = useSidebar()
 
   return (
     <Button
       data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("size-7", className)}
+      variant="default"
+      size="lg"
+      className={cn(
+        "fixed right-6 bottom-6 z-50 shadow-2xl border-2 border-primary/20 hover:border-primary/40 hidden md:flex rounded-full h-12 w-12", 
+        className
+      )}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
-      {...props}>
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
+      {...props}
+    >
+       {open ? (
+        <X className="h-4 w-4"  />
+      ) : (
+        <>
+          <MessageCircle className="h-4 w-4"  />
+
+        </>
+      )}
     </Button>
-  );
+  )
 }
+
 
 function SidebarRail({
   className,

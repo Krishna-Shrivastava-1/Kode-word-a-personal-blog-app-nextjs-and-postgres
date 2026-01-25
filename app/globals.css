@@ -179,7 +179,6 @@
   height: auto;
 }
 
-
 /* Code block styling for blog posts */
 .blog-content pre {
   position: relative;
@@ -274,5 +273,4 @@
 *{
   scroll-behavior: smooth;
 }
-
 

@@ -40,7 +40,7 @@ const Navbar = () => {
     <SheetHeader>
       <SheetTitle> <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
-                <Image src={logo} alt='Logo' width={50} height={10} />
+                <Image src={logo} alt='Logo' width={35} height={10} />
                 <h1 className='font-semibold text-xl '>Kode$word</h1>
             </div>
            </Link></SheetTitle>
@@ -99,7 +99,7 @@ const Navbar = () => {
             </div>
            <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
-                <Image src={logo} alt='Logo' width={50} height={10} />
+                <Image src={logo} alt='Logo' width={35} height={10} />
                 <h1 className='font-semibold text-xl '>Kode$word</h1>
             </div>
            </Link>

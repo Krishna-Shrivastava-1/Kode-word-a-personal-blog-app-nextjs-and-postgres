@@ -3,6 +3,13 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { ContextProvider } from "@/components/ContextAPI";
 import { Analytics } from "@vercel/analytics/next"
+import ChatWidget from "@/components/ChatWidget";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/chatSideBar";
+import { cookies } from "next/headers";
+import ClientSidebarWrapper from "@/components/ClientSidebarWrapper";
+
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -143,7 +150,37 @@ export default function RootLayout({ children }) {
     }
   ];
 
-  return (
+  // return (
+  //   <html lang="en">
+  //     <head>
+  //       <script
+  //         type="application/ld+json"
+  //         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+  //       />
+  //     </head>
+  //     <body suppressHydrationWarning
+  //       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+  //     >
+  //       <ContextProvider>
+  //          <SidebarProvider>
+    
+  //     <main>
+  //         {children}
+  //         <SidebarTrigger />
+  //     </main>
+  //       <AppSidebar />
+  //          </SidebarProvider>
+  //         <Analytics />
+  //         <Toaster richColors />
+  //       </ContextProvider>
+
+
+
+  //     </body>
+  //   </html>
+  // );
+
+   return (
     <html lang="en">
       <head>
         <script
@@ -154,12 +191,16 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        
         <ContextProvider>
-          {children}
+          <ClientSidebarWrapper>
+            {children}
+            {/* <ChatWidget /> */}
+          </ClientSidebarWrapper>
           <Analytics />
           <Toaster richColors />
         </ContextProvider>
       </body>
     </html>
-  );
+  )
 }
