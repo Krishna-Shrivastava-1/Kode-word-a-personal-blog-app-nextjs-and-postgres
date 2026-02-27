@@ -4,11 +4,30 @@ import { usePathname } from "next/navigation"
 import { SidebarProvider, SidebarTrigger } from "./ui/sidebar"
 import { AppSidebar } from "./chatSideBar"
 import ChatWidget from "./ChatWidget"
+import { useEffect, useState } from "react"
+import axios from "axios"
 
 export default function ClientSidebarWrapper({ children }) {
   const pathname = usePathname()
+  const [statusHealth, setstatusHealth] = useState(true)
 const hideOnRoutes = ["/", "/otp", "/sign-in", "/sign-up"]
 const shouldHideChatWidget = hideOnRoutes.includes(pathname)
+
+useEffect(() => {
+
+  const checkHealth = async () => {
+    try {
+      const resp = await axios.get(process.env.NEXT_PUBLIC_CHATHEALTHURL);
+      setstatusHealth(resp?.data?.status === 'ok');
+    } catch (error) {
+      console.error("Health check failed:", error);
+      setstatusHealth(false);
+    }
+  };
+
+  checkHealth();
+}, [pathname]); 
+
 
   if (shouldHideChatWidget) {
     return (
@@ -21,7 +40,7 @@ const shouldHideChatWidget = hideOnRoutes.includes(pathname)
   pathname !== "/sign-in" &&
   pathname !== "/sign-up" && (
     <div>
-      <ChatWidget />
+      <ChatWidget statusHealth={statusHealth} />
     </div>
   )
 }
@@ -51,12 +70,12 @@ const shouldHideChatWidget = hideOnRoutes.includes(pathname)
 
         {/* Sidebar */}
         <div className="w-auto shrink-0">
-          <AppSidebar />
+          <AppSidebar statusHealth={statusHealth} />
         </div>
 
         {/* Mobile Chat Widget */}
         <div className="md:hidden fixed right-4 bottom-4 z-50">
-          <ChatWidget />
+          <ChatWidget statusHealth={statusHealth} />
         </div>
       </div>
     </SidebarProvider>

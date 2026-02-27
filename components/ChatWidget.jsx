@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { MessageCircle, X } from "lucide-react"
+import { Dot, MessageCircle, X } from "lucide-react"
 import { ChatDemo } from "./ChatDemo"
 
-export default function ChatWidget() {
+export default function ChatWidget({statusHealth}) {
   const [open, setOpen] = useState(false)
 
   // Fix mobile header visibility + session persistence
@@ -54,7 +54,7 @@ export default function ChatWidget() {
           
           {/* Header - ALWAYS VISIBLE */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b bg-background/95 backdrop-blur-sm shrink-0 z-10 sm:border-b-gray-200">
-            <span className="font-semibold text-base tracking-tight">Ai Assistant Kas</span>
+            <span className="font-semibold text-base tracking-tight flex items-center">{statusHealth ? <Dot className="text-green-600" size={40} /> : <Dot className="text-red-600" size={40} />}<h1>Ai Assistant Kas</h1></span>
             <Button
               size="icon"
               variant="ghost"

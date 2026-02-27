@@ -214,34 +214,77 @@ const recommendationData=await getRecommendation.json()
       <PostViewCounter postId={post.id} />
 
       <article className="min-h-screen md:mt-0 mt-16 bg-gray-50">
-        {/* Hero Section */}
-        <div className="relative w-full aspect-[16/7] sm:aspect-[16/6] object-cover bg-neutral-900 overflow-hidden bg-gradient-to-t from-neutral-900/90 via-white to-transparent">
-          <Image
-            src={post.thumbnailimage}
-            alt={post.title}
-            fill
-            className="object-center object-contain opacity-85"
-            priority
-          />
+{/* ================= HERO SECTION ================= */}
+<div className="relative w-full overflow-hidden">
 
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/90 via-gray-900/40 to-transparent" />
+ {/* Image Wrapper */}
+{/* <div className="absolute top-0 left-0 w-full h-[30%] 
+                hidden lg:block 
+                bg-gradient-to-b from-white/90 via-white/60 to-transparent" /> */}
+  <div className="absolute top-0 w-full min-h-[260px] sm:min-h-[350px] md:min-h-[450px] lg:min-h-[550px] max-h-[75vh]">
+    <Image
+      src={post.thumbnailimage}
+      alt={post.title}
+      fill
+      priority
+      className="object-cover blur-[5px] object-center"
+    />
+  </div>
+  <div className="relative w-full min-h-[260px] sm:min-h-[350px] md:min-h-[450px] lg:min-h-[550px] max-h-[75vh]">
+    <Image
+      src={post.thumbnailimage}
+      alt={post.title}
+      fill
+      priority
+      className="object-contain object-center"
+    />
+  </div>
 
-          <div className="absolute inset-0 flex items-end">
-            <div className="w-full p-4 sm:p-6 md:p-8 lg:p-12">
-              <div className="max-w-5xl mx-auto">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-2 sm:mb-3 line-clamp-3">
-                  {post.title}
-                </h1>
+  {/* Bottom Gradient Mask ONLY */}
+    <div className="absolute bottom-0 left-0 w-full h-[70%] bg-gradient-to-t from-white/30 via-white/15 to-transparent" />
+  {/* ================= DESKTOP OVERLAY ================= */}
+  <div className="hidden md:flex absolute inset-0 items-end pointer-events-none">
 
-                <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-200 leading-relaxed line-clamp-1 sm:line-clamp-2">
-                  {post.subtitle}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+    {/* Bottom Gradient Mask ONLY */}
+    <div className="absolute bottom-0 left-0 w-full h-[80%] bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
 
-        {/* ✅ Meta Info with semantic HTML */}
+    {/* Text */}
+    <div className="relative w-full px-6 md:px-10 pb-8 md:pb-12">
+      <div className="max-w-5xl mx-auto text-white">
+
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-3">
+          {post.title}
+        </h1>
+
+        {post.subtitle && (
+          <p className="text-base md:text-lg text-gray-200 max-w-3xl">
+            {post.subtitle}
+          </p>
+        )}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{/* ================= MOBILE TITLE SECTION ================= */}
+<div className="block md:hidden bg-white px-4 py-5">
+  <div className="max-w-3xl mx-auto">
+    <h1 className="text-xl font-bold text-gray-900 leading-snug mb-2">
+      {post.title}
+    </h1>
+
+    {post.subtitle && (
+      <p className="text-sm text-gray-600 leading-relaxed">
+        {post.subtitle}
+      </p>
+    )}
+  </div>
+</div>
+
+
+   {/* ✅ Meta Info with semantic HTML */}
         <div className="bg-white border-b">
           <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center gap-4 sm:gap-6 text-sm text-gray-600">
@@ -341,7 +384,7 @@ const recommendationData=await getRecommendation.json()
                            </div>
                                </div>
                       </div>
-        </div>
+</div>
 
         {/* ✅ Content with itemProp for structured data */}
         <div className="max-w-4xl mx-auto px-2 py-8 sm:py-12">

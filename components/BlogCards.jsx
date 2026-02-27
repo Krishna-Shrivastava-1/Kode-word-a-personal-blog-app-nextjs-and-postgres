@@ -326,7 +326,7 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
             </div>
 
             {/* Pagination Controls */}
-            <nav aria-label="Blog pagination" className="flex items-center gap-1">
+            <nav aria-label="Blog pagination" className="flex items-center flex-wrap gap-1">
               {/* Previous */}
               <Link
                 href={`/blog${currentPage > 1 ? `?page=${currentPage - 1}` : ''}`}
