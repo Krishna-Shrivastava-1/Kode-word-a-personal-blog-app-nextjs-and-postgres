@@ -28,7 +28,7 @@ export const metadata = {
     template: '%s | Kode$word'
   },
   
-  description: 'The coding journey of Krishna Shrivastava. Explore full-stack projects (Spring Boot, Next.js), LeetCode solutions, and insights into building scalable applications like krido and more.',
+  description: 'The coding journey of Krishna Shrivastava. Explore full-stack projects (Spring Boot, Next.js), LeetCode solutions, and insights into building scalable applications like krido, kodesword and more.',
   
   keywords: [
     // Personal Brand & Core Focus
@@ -89,7 +89,7 @@ export const metadata = {
     siteName: 'Kode$word',
     images: [
       {
-        url: '/og-image.png', // Make sure you have an image file in your public folder!
+        url: '/favicon.ico', // Make sure you have an image file in your public folder!
         width: 1200,
         height: 630,
         alt: 'Kode$word - Krishna Shrivastava Portfolio',

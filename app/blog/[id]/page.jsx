@@ -213,7 +213,7 @@ const recommendationData=await getRecommendation.json()
       <ScrollProgress />
       <PostViewCounter postId={post.id} />
 
-      <article className="min-h-screen md:mt-0 mt-16 bg-gray-50">
+      <article className="min-h-screen mt-13 bg-gray-50">
 {/* ================= HERO SECTION ================= */}
 <div className="relative w-full overflow-hidden">
 
@@ -236,7 +236,7 @@ const recommendationData=await getRecommendation.json()
       alt={post.title}
       fill
       priority
-      className="object-contain object-center"
+      className="object-contain object-center "
     />
   </div>
 
@@ -252,7 +252,7 @@ const recommendationData=await getRecommendation.json()
     <div className="relative w-full px-6 md:px-10 pb-8 md:pb-12">
       <div className="max-w-5xl mx-auto text-white">
 
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-3">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl  font-bold leading-tight mb-3">
           {post.title}
         </h1>
 

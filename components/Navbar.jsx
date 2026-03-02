@@ -40,7 +40,7 @@ const Navbar = () => {
     <SheetHeader>
       <SheetTitle> <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
-                <Image src={logo} alt='Logo' width={35} height={10} />
+                <Image src={logo} alt='Logo' width={75} height={70} />
                 <h1 className='font-semibold text-xl '>Kode$word</h1>
             </div>
            </Link></SheetTitle>
@@ -76,11 +76,11 @@ const Navbar = () => {
            </Link>
          
            <FieldSeparator />
-       
-            <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
+       {/*  Search bar removed from sheet */}
+            {/* <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
 <SearchBox />
              
-            </div>
+            </div> */}
               {/* <FieldSeparator /> */}
               {
                 !UserData && <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
@@ -99,7 +99,7 @@ const Navbar = () => {
             </div>
            <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
-                <Image src={logo} alt='Logo' width={35} height={10} />
+                <Image src={logo} alt='Logo' width={40} height={10} />
                 <h1 className='font-semibold text-xl '>Kode$word</h1>
             </div>
            </Link>
@@ -107,6 +107,7 @@ const Navbar = () => {
 
            
            </div>
+
             <UserIcon />
         </div>
     )

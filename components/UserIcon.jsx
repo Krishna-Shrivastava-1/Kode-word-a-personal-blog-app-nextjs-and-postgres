@@ -74,6 +74,7 @@ const handleLogout = async () => {
     return (
       <div className="flex items-center gap-2 z-50">
         <div className='hidden md:flex  items-center'>
+
      <SearchBox />
      <Link href={'/contact'}>
                  <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
@@ -89,6 +90,9 @@ const handleLogout = async () => {
                      </Button>
                  </div>
                 </Link>
+        </div>
+        <div className='md:hidden flex'>
+          <SearchBox showText={false} />
         </div>
         <Button 
           variant="outline" 

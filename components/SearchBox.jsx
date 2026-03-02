@@ -19,7 +19,7 @@ const stripHtml = (html) => {
   return div.textContent || div.innerText || ''
 }
 
-const SearchBox = () => {
+const SearchBox = ({showText = true}) => {
     const searchParams = useSearchParams()
   const tagFromUrl = searchParams.get('tag')
   const [open, setOpen] = useState(false)
@@ -78,7 +78,10 @@ const SearchBox = () => {
         <DialogTrigger asChild>
           <div className='rounded-sm sm:border flex items-center justify-end p-1 px-2 gap-x-3 cursor-pointer py-2 hover:bg-gray-50 bg-white/55 transition-colors'>
             <Search className='w-4 h-4 block sm:hidden' />
-            <p className='sm:font-medium font-semibold text-lg sm:text-sm'>Type to Search</p>
+            {
+              showText &&
+              <p className='sm:font-medium font-semibold text-lg sm:text-sm'>Type to Search</p>
+            }
             <Search className='w-4 h-4 sm:block hidden' />
           </div>
         </DialogTrigger>
