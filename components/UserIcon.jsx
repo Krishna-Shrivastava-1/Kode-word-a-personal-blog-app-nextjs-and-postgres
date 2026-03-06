@@ -137,7 +137,9 @@ const handleLogout = async () => {
                  </div>
                 </Link>
         </div>
-        
+         <div className='sm:hidden flex'>
+          <SearchBox showText={false} />
+        </div>
         <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 

@@ -90,13 +90,13 @@ const SearchBox = ({showText = true}) => {
             <DialogTitle className='flex items-center justify-between'>
               <div className='flex items-center gap-2'>
                 <Search className='w-5 h-5' />
-                Search Posts
+                Search Blogs
               </div>
             </DialogTitle>
             
             <div className='relative'>
               <Input 
-                placeholder='Type to search posts...' 
+                placeholder='Type to search blogs...' 
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className='pl-10 pr-10'
@@ -123,12 +123,12 @@ const SearchBox = ({showText = true}) => {
             ) : results.length === 0 ? (
               query.trim() ? (
                 <div className='text-center py-8'>
-                  <p className='text-gray-500 mb-2'>No posts found for "{query}"</p>
+                  <p className='text-gray-500 mb-2'>No blogs found for "{query}"</p>
                   <p className='text-xs text-gray-400'>Try different keywords</p>
                 </div>
               ) : (
                 <p className='text-gray-500 text-center py-8 italic'>
-                  Start typing to search posts
+                  Start typing to search blogs
                 </p>
               )
             ) : (

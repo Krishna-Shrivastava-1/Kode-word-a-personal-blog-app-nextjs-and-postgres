@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { SidebarProvider, SidebarTrigger } from "./ui/sidebar"
+import { SidebarProvider, SidebarTrigger, SidebarTriggerChat } from "./ui/sidebar"
 import { AppSidebar } from "./chatSideBar"
 import ChatWidget from "./ChatWidget"
 import { useEffect, useState } from "react"
@@ -65,7 +65,7 @@ useEffect(() => {
 
         {/* Desktop sidebar trigger */}
         <div className="hidden md:block">
-          <SidebarTrigger />
+          <SidebarTriggerChat />
         </div>
 
         {/* Sidebar */}

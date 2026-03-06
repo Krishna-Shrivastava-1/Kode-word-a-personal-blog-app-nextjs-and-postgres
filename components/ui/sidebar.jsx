@@ -221,32 +221,32 @@ function Sidebar({
   );
 }
 
-// function SidebarTrigger({
-//   className,
-//   onClick,
-//   ...props
-// }) {
-//   const { toggleSidebar } = useSidebar()
+function SidebarTrigger({
+  className,
+  onClick,
+  ...props
+}) {
+  const { toggleSidebar } = useSidebar()
 
-//   return (
-//     <Button
-//       data-sidebar="trigger"
-//       data-slot="sidebar-trigger"
-//       variant="ghost"
-//       size="icon"
-//       className={cn("size-7 fixed right-10 bottom-10 z-40 ", className)}
-//       onClick={(event) => {
-//         onClick?.(event)
-//         toggleSidebar()
-//       }}
-//       {...props}>
-//       <PanelLeftIcon />
-//       <span className="sr-only">Toggle Sidebar</span>
-//     </Button>
-//   );
-// }
+  return (
+    <Button
+      data-sidebar="trigger"
+      data-slot="sidebar-trigger"
+      variant="ghost"
+      size="icon"
+      className={cn("size-7", className)}
+      onClick={(event) => {
+        onClick?.(event)
+        toggleSidebar()
+      }}
+      {...props}>
+      <PanelLeftIcon />
+      <span className="sr-only">Toggle Sidebar</span>
+    </Button>
+  );
+}
 
-function SidebarTrigger({ className, onClick, ...props }) {
+function SidebarTriggerChat({ className, onClick, ...props }) {
   const { toggleSidebar,open  } = useSidebar()
 
   return (
@@ -710,5 +710,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  SidebarTriggerChat,
   useSidebar,
 }
