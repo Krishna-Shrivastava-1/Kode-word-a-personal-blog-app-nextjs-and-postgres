@@ -86,7 +86,7 @@ export function Chat({
   return (
     <div className="relative flex flex-col bg-background h-dvh sm:h-[520px]">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 pb-24 sm:pb-3">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 pb-24 sm:pb-3 mt-16">
         {/* Welcome Message */}
         {messages.length === 0 && !isGenerating && (
           <div className="flex flex-col items-center justify-center h-full px-4 py-10 text-center">
