@@ -389,7 +389,7 @@ const recommendationData=await getRecommendation.json()
         {/* ✅ Content with itemProp for structured data */}
         <div className="max-w-4xl mx-auto px-2 py-8 sm:py-12">
           <div className="bg-white rounded-2xl overflow-x-auto text-wrap shadow-sm p-6 sm:p-8 lg:p-12" itemProp="articleBody">
-            <BlogContentRenderer content={post.content} />
+            <BlogContentRenderer content={post.content} articleSlug={post.slug} />
           </div>
         </div>
         <div className=''>

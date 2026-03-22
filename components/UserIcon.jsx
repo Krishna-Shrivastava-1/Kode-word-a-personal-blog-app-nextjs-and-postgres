@@ -73,48 +73,41 @@ const handleLogout = async () => {
   if (!userData?.success) {
     return (
       <div className="flex items-center gap-2 z-50">
-        <div className='hidden md:flex  items-center'>
-
-     <SearchBox />
-     <Link href={'/contact'}>
-                 <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
-                     <Button variant='outline'>
-                     <h1 className='font-medium '>Contact</h1>
-                     </Button>
-                 </div>
-                </Link>
-        <Link href={'/support'}>
-                 <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
-                     <Button variant='outline'>
-                     <h1 className='font-medium '>Support</h1>
-                     </Button>
-                 </div>
-                </Link>
+  <div className='flex items-center'>
+    <SearchBox />
+    <div className='hidden md:flex items-center'>
+      <Link href={'/contact'}>
+        <div className='flex items-center justify-center space-x-2 select-none cursor-pointer ml-2'>
+          <Button variant='outline'>
+            <h1 className='font-medium'>Contact</h1>
+          </Button>
         </div>
-        <div className='md:hidden flex'>
-          <SearchBox showText={false} />
+      </Link>
+      <Link href={'/support'}>
+        <div className='flex items-center justify-center space-x-2 select-none cursor-pointer ml-2'>
+          <Button variant='outline'>
+            <h1 className='font-medium'>Support</h1>
+          </Button>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-9 px-3 hidden sm:flex text-center  items-center justify-center"
-          asChild
-        
-        >
-          <Link href="/sign-in">
-            Sign in
-          </Link>
-        </Button>
-        <Button 
-          size="sm" 
-          className="h-9 px-3"
-          asChild
-        >
-          <Link href="/sign-up">
-            Get started
-          </Link>
-        </Button>
-      </div>
+      </Link>
+    </div>
+  </div>
+  <Button
+    variant="outline"
+    size="sm"
+    className="h-9 px-3 hidden sm:flex text-center items-center justify-center"
+    asChild
+  >
+    <Link href="/sign-in">Sign in</Link>
+  </Button>
+  <Button
+    size="sm"
+    className="h-9 px-3"
+    asChild
+  >
+    <Link href="/sign-up">Get started</Link>
+  </Button>
+</div>
     )
   }
 
@@ -124,14 +117,14 @@ const handleLogout = async () => {
      <SearchBox />
     <Link href={'/contact'}>
                  <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
-                     <Button variant='outline'>
+                     <Button variant='outline' >
                      <h1 className='font-medium '>Contact</h1>
                      </Button>
                  </div>
                 </Link>
     <Link href={'/support'}>
                  <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
-                     <Button variant='outline'>
+                     <Button variant='outline' className='cursor-pointer'>
                      <h1 className='font-medium '>Support</h1>
                      </Button>
                  </div>

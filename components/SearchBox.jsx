@@ -19,25 +19,57 @@ const stripHtml = (html) => {
   return div.textContent || div.innerText || ''
 }
 
-const SearchBox = ({showText = true}) => {
-    const searchParams = useSearchParams()
+// ─── Outside component — shared media query hook ──────────────────────────────
+function useIsMd() {
+  const [isMd, setIsMd] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    setIsMd(mq.matches)
+    setMounted(true)
+    const fn = (e) => setIsMd(e.matches)
+    mq.addEventListener('change', fn)
+    return () => mq.removeEventListener('change', fn)
+  }, [])
+  return { isMd, mounted }
+}
+
+const SearchBox = ({ showText = true }) => {
+  const { isMd, mounted } = useIsMd()
+  const searchParams = useSearchParams()
   const tagFromUrl = searchParams.get('tag')
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     if (tagFromUrl && !open) {
+      if (!mounted) return
+      if (showText && !isMd) return
+      if (!showText && isMd) return
       setQuery(tagFromUrl)
       setOpen(true)
-      // Clear the URL param after triggering (optional, cleaner UX)
       window.history.replaceState({}, '', window.location.pathname)
     }
-  }, [tagFromUrl, open])
-  // Debounce search query by 400ms
+  }, [tagFromUrl, open, isMd, showText, mounted])
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault()
+        if (!mounted) return
+        if (showText && !isMd) return
+        if (!showText && isMd) return
+        setOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isMd, showText, mounted])
+
   const debouncedQuery = useDebounce(query, 400)
 
-  // Search only when debounced query changes
   useEffect(() => {
     if (debouncedQuery.trim().length > 0) {
       const search = async () => {
@@ -77,14 +109,31 @@ const SearchBox = ({showText = true}) => {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <div className='rounded-sm sm:border flex items-center justify-end p-1 px-2 gap-x-3 cursor-pointer py-2 hover:bg-gray-50 bg-white/55 transition-colors'>
-            <Search className='w-4 h-4 block sm:hidden' />
-            {
-              showText &&
-              <p className='sm:font-medium font-semibold text-lg sm:text-sm'>Type to Search</p>
-            }
-            <Search className='w-4 h-4 sm:block hidden' />
+            {/* Mobile — icon only */}
+            <Search className='w-4 h-4 sm:hidden' />
+
+            {/* Desktop — text + shortcut badge */}
+            {showText && (
+              <div className='hidden sm:flex items-center gap-2'>
+                <p className='font-medium text-sm text-gray-700'>Type to Search</p>
+                <div className='flex items-center gap-0.5'>
+                  <kbd className='inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-300 rounded'>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>
+                    </svg>
+                  </kbd>
+                  <kbd className='inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-gray-500 bg-gray-100 border border-gray-300 rounded'>
+                    K
+                  </kbd>
+                </div>
+              </div>
+            )}
+
+            {/* Desktop search icon when showText is false */}
+            {!showText && <Search className='w-4 h-4 hidden sm:block' />}
           </div>
         </DialogTrigger>
+
         <DialogContent className='max-w-2xl max-h-[80vh]'>
           <DialogHeader>
             <DialogTitle className='flex items-center justify-between'>
@@ -93,10 +142,10 @@ const SearchBox = ({showText = true}) => {
                 Search Blogs
               </div>
             </DialogTitle>
-            
+
             <div className='relative'>
-              <Input 
-                placeholder='Type to search blogs...' 
+              <Input
+                placeholder='Type to search blogs...'
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className='pl-10 pr-10'
@@ -113,7 +162,7 @@ const SearchBox = ({showText = true}) => {
               )}
             </div>
           </DialogHeader>
-          
+
           <div className='mt-4 max-h-96 overflow-y-auto space-y-2'>
             {loading ? (
               <div className='flex flex-col items-center justify-center py-8 gap-2'>
@@ -137,11 +186,11 @@ const SearchBox = ({showText = true}) => {
                   Found {results.length} result{results.length !== 1 ? 's' : ''}
                 </p>
                 {results.map((post) => (
-                  <div 
-                    key={post.id} 
+                  <div
+                    key={post.id}
                     className='border p-3 rounded-lg hover:bg-gray-50 cursor-pointer group transition-colors'
                     onClick={() => {
-                      window.location.href = `/blog/${post.slug||post.id}`
+                      window.location.href = `/blog/${post.slug || post.id}`
                       setOpen(false)
                     }}
                   >
@@ -152,31 +201,24 @@ const SearchBox = ({showText = true}) => {
                       {stripHtml(post.subtitle || post.content?.slice(0, 150))}
                     </p>
                     {post.tag && (
-                     <div className="flex justify-start items-center  flex-wrap" >
-                      {
-                    
-                      post.tag.split(',').length > 1 ?
-                      post.tag.split(',')?.map((e,ind)=>(
-                          <span
-                          key={ind}
-         className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
-         
-        >
-          <Tag className="w-3 h-3" />
-          {e.trim()}
-        </span>
-                      ))
-                      
-                      :
-                         <span
-          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
- 
-        >
-          <Tag className="w-3 h-3" />
-          {post.tag.trim()}
-        </span>
-                    }
-                    </div>
+                      <div className="flex justify-start items-center flex-wrap">
+                        {post.tag.split(',').length > 1 ? (
+                          post.tag.split(',')?.map((e, ind) => (
+                            <span
+                              key={ind}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
+                            >
+                              <Tag className="w-3 h-3" />
+                              {e.trim()}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors">
+                            <Tag className="w-3 h-3" />
+                            {post.tag.trim()}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
