@@ -637,7 +637,15 @@ export default function QuillEditor({ content = '', onChange }) {
     }
     return () => { delete window.__editorSetSaving }
   }, [])
-
+useEffect(() => {
+  window.__editorRestoreContent = (html) => {
+    const quill = quillRef.current?.getEditor()
+    if (!quill || !html) return
+    quill.clipboard.dangerouslyPasteHTML(0, html)
+    prevContentRef.current = html
+  }
+  return () => { delete window.__editorRestoreContent }
+}, [])
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape' && fullscreen) setFullscreen(false) }
     window.addEventListener('keydown', handler)

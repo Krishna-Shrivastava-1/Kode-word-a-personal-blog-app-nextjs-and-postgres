@@ -291,6 +291,8 @@ const Page = () => {
             setTag(draft.tag || '')
             setslug(draft.slug || '')
             setContent(draft.content || '<p>Start writing here...</p>')
+            window.__editorRestoreContent?.(draft.content)
+  toast.success('Draft restored')
             setBannerUrl(draft.bannerUrl || '')
             toast.success('Draft restored')
           }
