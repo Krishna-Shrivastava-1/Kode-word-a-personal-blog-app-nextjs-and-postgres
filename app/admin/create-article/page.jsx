@@ -253,6 +253,351 @@
 
 
 
+// 'use client'
+// import QuillEditor from '@/components/QuillEditor'
+// import React, { useEffect, useState, useRef } from 'react'
+// import { Input } from '@/components/ui/input'
+// import { Button } from '@/components/ui/button'
+// import { toast } from 'sonner'
+// import axios from 'axios'
+// import { useRouter } from 'next/navigation'
+
+// const DRAFT_KEY = 'article-draft'
+
+// const Page = () => {
+//   const [title, setTitle] = useState('')
+//   const [subtitle, setSubtitle] = useState('')
+//   const [tag, setTag] = useState('')
+//   const [slug, setslug] = useState('')
+//   const [content, setContent] = useState('<p>Start writing here...</p>')
+//   const [bannerUrl, setBannerUrl] = useState('')
+//   const [uploadingBanner, setUploadingBanner] = useState(false)
+//   const [removingBanner, setRemovingBanner] = useState(false)
+//   const [userData, setuserData] = useState([])
+//   const router = useRouter()
+//   const saveTimeoutRef = useRef(null)
+
+//   // Restore draft on mount
+//   useEffect(() => {
+//     if (typeof window !== 'undefined') {
+//       const savedDraft = localStorage.getItem(DRAFT_KEY)
+//       if (savedDraft) {
+//         try {
+//           const draft = JSON.parse(savedDraft)
+//           const shouldRestore = confirm('Found a saved draft. Would you like to restore it?')
+//           if (shouldRestore) {
+//             setTitle(draft.title || '')
+//             setSubtitle(draft.subtitle || '')
+//             setTag(draft.tag || '')
+//             setslug(draft.slug || '')
+//             setContent(draft.content || '<p>Start writing here...</p>')
+//             window.__editorRestoreContent?.(draft.content)
+//   toast.success('Draft restored')
+//             setBannerUrl(draft.bannerUrl || '')
+//             toast.success('Draft restored')
+//           }
+//         } catch (error) {
+//           console.error('Error restoring draft:', error)
+//         }
+//       }
+//     }
+//   }, [])
+
+//   // Fetch logged user
+//   const fetchLoggedUser = async () => {
+//     try {
+//       const resp = await axios.get('/api/auth/loggedinuser')
+//       if (resp?.data?.success) {
+//         setuserData(resp?.data?.loggedUser)
+//       }
+//     } catch (error) {
+//       console.log(error.message)
+//     }
+//   }
+
+//   useEffect(() => {
+//     fetchLoggedUser()
+//   }, [])
+
+//   // Autosave with debouncing - runs every time form data changes
+//   useEffect(() => {
+//     // Clear previous timeout
+//     if (saveTimeoutRef.current) {
+//       clearTimeout(saveTimeoutRef.current)
+//     }
+
+//     // Only autosave if there's actual content
+//     if (title || subtitle || tag || content !== '<p>Start writing here...</p>' || bannerUrl) {
+      
+//       saveTimeoutRef.current = setTimeout(() => {
+//         if (typeof window !== 'undefined') {
+//           const draft = {
+//             title,
+//             subtitle,
+//             tag,
+//             slug,
+//             content,
+//             bannerUrl,
+//             savedAt: new Date().toISOString()
+//           }
+//           localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+//           // console.log('Draft saved automatically')
+//           toast.success('Draft saved', { duration: 1000 })
+//         }
+//       }, 2000) // Save after 2 seconds of inactivity
+//     }
+
+//     // Cleanup function
+//     return () => {
+//       if (saveTimeoutRef.current) {
+//         clearTimeout(saveTimeoutRef.current)
+//       }
+//     }
+//   }, [title, subtitle, tag, slug, content, bannerUrl])
+
+//   const handleBannerChange = async (e) => {
+//     const file = e.target.files?.[0]
+//     if (!file) return
+
+//     try {
+//       setUploadingBanner(true)
+
+//       const formData = new FormData()
+//       formData.append('image', file)
+
+//       const res = await fetch('/api/upload-image', {
+//         method: 'POST',
+//         body: formData,
+//       })
+
+//       const data = await res.json()
+//       if (data.url) {
+//         setBannerUrl(data.url)
+//         toast.success('Banner uploaded')
+//       } else {
+//         alert('Banner upload failed: ' + (data.error || 'Unknown error'))
+//       }
+//     } catch (err) {
+//       console.error('Banner upload error:', err)
+//       alert('Banner upload failed')
+//     } finally {
+//       setUploadingBanner(false)
+//       e.target.value = ''
+//     }
+//   }
+
+//   const handleRemoveBanner = async () => {
+//     if (!bannerUrl) return
+
+//     const confirmDelete = confirm(
+//       'Remove this banner image and delete it from storage?'
+//     )
+//     if (!confirmDelete) return
+
+//     try {
+//       setRemovingBanner(true)
+
+//       await fetch('/api/delete-image', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ imageUrl: bannerUrl }),
+//       })
+
+//       setBannerUrl('')
+//       toast.success('Banner removed')
+//     } catch (err) {
+//       console.error('Banner delete error:', err)
+//       alert('Failed to delete banner image')
+//     } finally {
+//       setRemovingBanner(false)
+//     }
+//   }
+
+//   const handlePostCreation = async () => {
+//     try {
+//       if (!slug) return toast.warning("Fill the slug field properly.")
+//       if (!title || !subtitle || !bannerUrl || !tag || !content || !userData?.id)
+//         return toast.warning("Fill all the fields properly.")
+
+//       const resp = await axios.post('/api/post/createpost', {
+//         title,
+//         subtitle,
+//         thumbnailImage: bannerUrl,
+//         tag,
+//         content,
+//         userid: userData?.id,
+//         slug
+//       })
+
+//       if (resp?.data?.success) {
+//         toast.success("Article Created Successfully")
+//         // Clear draft after successful post
+//         if (typeof window !== 'undefined') {
+//           localStorage.removeItem(DRAFT_KEY)
+//         }
+//         router.back()
+//       } else {
+//         toast.error(`Article is not Created due to ${resp?.data?.message}`)
+//       }
+//     } catch (error) {
+//       console.log(error.message)
+//       toast.error(error.message)
+//     }
+//   }
+
+//   const clearDraft = () => {
+//     const confirmClear = confirm('Are you sure you want to clear this draft?')
+//     if (confirmClear) {
+//       if (typeof window !== 'undefined') {
+//         localStorage.removeItem(DRAFT_KEY)
+//       }
+//       setTitle('')
+//       setSubtitle('')
+//       setTag('')
+//       setslug('')
+//       setContent('<p>Start writing here...</p>')
+//       setBannerUrl('')
+//       toast.success('Draft cleared')
+//     }
+//   }
+
+//   const generateSlug = (text) => {
+//     return text
+//       .toString()
+//       .toLowerCase()
+//       .trim()
+//       .replace(/\s+/g, '-')
+//       .replace(/[^\w\-]+/g, '')
+//       .replace(/\-\-+/g, '-')
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 px-4 py-8">
+//       <div className="max-w-4xl mx-auto space-y-6">
+//         <div className="flex justify-between items-center">
+//           <h1 className="text-3xl font-bold">Create Article</h1>
+//           <Button variant="outline" onClick={clearDraft}>
+//             Clear Draft
+//           </Button>
+//         </div>
+
+//         {/* Title */}
+//         <div className="space-y-2">
+//           <label className="text-sm font-medium text-gray-700">Title</label>
+//           <Input
+//             placeholder="Amazing blog post title..."
+//             value={title}
+//             onChange={(e) => {
+//               const newTitle = e.target.value
+//               setTitle(newTitle)
+//               setslug(generateSlug(newTitle))
+//             }}
+//           />
+//         </div>
+
+//         {/* Subtitle */}
+//         <div className="space-y-2">
+//           <label className="text-sm font-medium text-gray-700">Subtitle</label>
+//           <Input
+//             placeholder="Enter subtitle for your article..."
+//             value={subtitle}
+//             onChange={(e) => setSubtitle(e.target.value)}
+//           />
+//         </div>
+
+//         {/* Slug */}
+//         <div className="space-y-2 flex flex-col w-full">
+//           <label className="text-sm font-medium text-gray-700">Slug</label>
+//           <Input
+//             type='text'
+//             placeholder="auto-generated-slug"
+//             value={slug}
+//             readOnly
+//           />
+//         </div>
+
+//         {/* Tag */}
+//         <div className="space-y-2">
+//           <label className="text-sm font-medium text-gray-700">Tag</label>
+//           <Input
+//             placeholder="e.g. Next.js, Web Dev, Life"
+//             value={tag}
+//             onChange={(e) => setTag(e.target.value)}
+//           />
+//         </div>
+
+//         <div className="space-y-2">
+//           <label className="text-sm font-medium text-gray-700">
+//             Article Banner Image Via Url
+//           </label>
+//           <Input
+//             placeholder="https://bannerimage.img"
+//             value={bannerUrl}
+//             onChange={(e) => setBannerUrl(e.target.value)}
+//           />
+//         </div>
+
+//         {/* Banner image */}
+//         <div className="space-y-3">
+//           <label className="text-sm font-medium text-gray-700">
+//             Article Banner Image
+//           </label>
+//           <div className="flex items-center gap-3">
+//             <Input
+//               type="file"
+//               accept="image/*"
+//               onChange={handleBannerChange}
+//               disabled={uploadingBanner || removingBanner}
+//             />
+//             {bannerUrl && (
+//               <Button
+//                 type="button"
+//                 variant="outline"
+//                 onClick={handleRemoveBanner}
+//                 disabled={removingBanner}
+//               >
+//                 {removingBanner ? 'Removing...' : 'Remove Banner'}
+//               </Button>
+//             )}
+//           </div>
+//           {uploadingBanner && (
+//             <p className="text-xs text-gray-500">Uploading banner...</p>
+//           )}
+//           {bannerUrl && (
+//             <div className="mt-2">
+//               <p className="text-xs text-gray-600 mb-1">Banner preview:</p>
+//               <img
+//                 src={bannerUrl}
+//                 alt="Banner preview"
+//                 className="w-full rounded-xl border max-w-full max-h-64 object-contain"
+//               />
+//             </div>
+//           )}
+//         </div>
+
+//         {/* Editor */}
+//         <div className="space-y-2">
+//           <label className="text-sm font-medium text-gray-700">Content</label>
+//           <QuillEditor content={content} onChange={setContent} />
+//         </div>
+
+//         <div className="pt-4 flex gap-3">
+//           <Button type="button" onClick={handlePostCreation}>
+//             Create Post
+//           </Button>
+//           <Button type="button" variant="secondary" onClick={clearDraft}>
+//             Discard Draft
+//           </Button>
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
+
+// export default Page
+
+
+
 'use client'
 import QuillEditor from '@/components/QuillEditor'
 import React, { useEffect, useState, useRef } from 'react'
@@ -263,154 +608,133 @@ import axios from 'axios'
 import { useRouter } from 'next/navigation'
 
 const DRAFT_KEY = 'article-draft'
+const EMPTY_CONTENT = '<p>Start writing here...</p>'
+
+// ─── Read draft synchronously before component renders ────────────────────────
+// This runs once at module evaluation time — before any useEffect or render.
+// By the time QuillEditor mounts, content is already the draft content.
+// This means defaultValue={content} will correctly initialize Quill with the draft,
+// and prevContentRef will also be initialized with the draft content.
+function loadDraftSync() {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
 
 const Page = () => {
+  const router = useRouter()
+  const saveTimeoutRef = useRef(null)
+
+  // ─── Check for draft BEFORE useState initializers run ─────────────────────
+  // We use a ref to store the draft so we can ask the user once in useEffect
+  const pendingDraftRef = useRef(loadDraftSync())
+  const [draftRestored, setDraftRestored] = useState(false)
+
+  // Initialize state — if we have a pending draft, we'll apply it after confirm
   const [title, setTitle] = useState('')
   const [subtitle, setSubtitle] = useState('')
   const [tag, setTag] = useState('')
   const [slug, setslug] = useState('')
-  const [content, setContent] = useState('<p>Start writing here...</p>')
+  const [content, setContent] = useState(EMPTY_CONTENT)
   const [bannerUrl, setBannerUrl] = useState('')
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [removingBanner, setRemovingBanner] = useState(false)
   const [userData, setuserData] = useState([])
-  const router = useRouter()
-  const saveTimeoutRef = useRef(null)
 
-  // Restore draft on mount
+  // ─── Ask user about draft restore — but BEFORE QuillEditor renders ─────────
+  // We gate QuillEditor rendering behind draftRestored state.
+  // This ensures we know the correct initial content BEFORE Quill mounts.
+  const [editorContent, setEditorContent] = useState(EMPTY_CONTENT)
+  const [editorReady, setEditorReady] = useState(false)
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedDraft = localStorage.getItem(DRAFT_KEY)
-      if (savedDraft) {
-        try {
-          const draft = JSON.parse(savedDraft)
-          const shouldRestore = confirm('Found a saved draft. Would you like to restore it?')
-          if (shouldRestore) {
-            setTitle(draft.title || '')
-            setSubtitle(draft.subtitle || '')
-            setTag(draft.tag || '')
-            setslug(draft.slug || '')
-            setContent(draft.content || '<p>Start writing here...</p>')
-            window.__editorRestoreContent?.(draft.content)
-  toast.success('Draft restored')
-            setBannerUrl(draft.bannerUrl || '')
-            toast.success('Draft restored')
-          }
-        } catch (error) {
-          console.error('Error restoring draft:', error)
-        }
+    const draft = pendingDraftRef.current
+    if (draft) {
+      const shouldRestore = confirm('Found a saved draft. Would you like to restore it?')
+      if (shouldRestore) {
+        setTitle(draft.title || '')
+        setSubtitle(draft.subtitle || '')
+        setTag(draft.tag || '')
+        setslug(draft.slug || '')
+        setBannerUrl(draft.bannerUrl || '')
+        setContent(draft.content || EMPTY_CONTENT)
+        // ✅ Set editorContent BEFORE QuillEditor mounts
+        // defaultValue will pick this up correctly
+        setEditorContent(draft.content || EMPTY_CONTENT)
+        toast.success('Draft restored')
       }
     }
+    // Now allow QuillEditor to mount — with correct initial content
+    setEditorReady(true)
   }, [])
 
   // Fetch logged user
-  const fetchLoggedUser = async () => {
-    try {
-      const resp = await axios.get('/api/auth/loggedinuser')
-      if (resp?.data?.success) {
-        setuserData(resp?.data?.loggedUser)
-      }
-    } catch (error) {
-      console.log(error.message)
-    }
-  }
-
   useEffect(() => {
+    const fetchLoggedUser = async () => {
+      try {
+        const resp = await axios.get('/api/auth/loggedinuser')
+        if (resp?.data?.success) setuserData(resp?.data?.loggedUser)
+      } catch (error) { console.log(error.message) }
+    }
     fetchLoggedUser()
   }, [])
 
-  // Autosave with debouncing - runs every time form data changes
+  // Autosave
   useEffect(() => {
-    // Clear previous timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-
-    // Only autosave if there's actual content
-    if (title || subtitle || tag || content !== '<p>Start writing here...</p>' || bannerUrl) {
-      
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
+    if (!editorReady) return // Don't autosave during restore phase
+    if (title || subtitle || tag || content !== EMPTY_CONTENT || bannerUrl) {
       saveTimeoutRef.current = setTimeout(() => {
         if (typeof window !== 'undefined') {
-          const draft = {
-            title,
-            subtitle,
-            tag,
-            slug,
-            content,
-            bannerUrl,
+          localStorage.setItem(DRAFT_KEY, JSON.stringify({
+            title, subtitle, tag, slug, content, bannerUrl,
             savedAt: new Date().toISOString()
-          }
-          localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
-          // console.log('Draft saved automatically')
+          }))
           toast.success('Draft saved', { duration: 1000 })
         }
-      }, 2000) // Save after 2 seconds of inactivity
+      }, 2000)
     }
-
-    // Cleanup function
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [title, subtitle, tag, slug, content, bannerUrl])
+    return () => { if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current) }
+  }, [title, subtitle, tag, slug, content, bannerUrl, editorReady])
 
   const handleBannerChange = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-
     try {
       setUploadingBanner(true)
-
       const formData = new FormData()
       formData.append('image', file)
-
-      const res = await fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData,
-      })
-
+      const res = await fetch('/api/upload-image', { method: 'POST', body: formData })
       const data = await res.json()
-      if (data.url) {
-        setBannerUrl(data.url)
-        toast.success('Banner uploaded')
-      } else {
-        alert('Banner upload failed: ' + (data.error || 'Unknown error'))
-      }
+      if (data.url) { setBannerUrl(data.url); toast.success('Banner uploaded') }
+      else alert('Banner upload failed: ' + (data.error || 'Unknown error'))
     } catch (err) {
       console.error('Banner upload error:', err)
       alert('Banner upload failed')
-    } finally {
-      setUploadingBanner(false)
-      e.target.value = ''
-    }
+    } finally { setUploadingBanner(false); e.target.value = '' }
   }
 
   const handleRemoveBanner = async () => {
     if (!bannerUrl) return
-
-    const confirmDelete = confirm(
-      'Remove this banner image and delete it from storage?'
-    )
-    if (!confirmDelete) return
-
+    if (!confirm('Remove this banner image and delete it from storage?')) return
     try {
       setRemovingBanner(true)
-
       await fetch('/api/delete-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageUrl: bannerUrl }),
       })
-
       setBannerUrl('')
       toast.success('Banner removed')
     } catch (err) {
       console.error('Banner delete error:', err)
       alert('Failed to delete banner image')
-    } finally {
-      setRemovingBanner(false)
-    }
+    } finally { setRemovingBanner(false) }
   }
 
   const handlePostCreation = async () => {
@@ -419,22 +743,17 @@ const Page = () => {
       if (!title || !subtitle || !bannerUrl || !tag || !content || !userData?.id)
         return toast.warning("Fill all the fields properly.")
 
+      // Flush any staged deletions (removed images/videos that weren't saved)
+      if (window.__editorFlushDeletions) await window.__editorFlushDeletions()
+
       const resp = await axios.post('/api/post/createpost', {
-        title,
-        subtitle,
-        thumbnailImage: bannerUrl,
-        tag,
-        content,
-        userid: userData?.id,
-        slug
+        title, subtitle, thumbnailImage: bannerUrl,
+        tag, content, userid: userData?.id, slug
       })
 
       if (resp?.data?.success) {
         toast.success("Article Created Successfully")
-        // Clear draft after successful post
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(DRAFT_KEY)
-        }
+        localStorage.removeItem(DRAFT_KEY)
         router.back()
       } else {
         toast.error(`Article is not Created due to ${resp?.data?.message}`)
@@ -446,42 +765,24 @@ const Page = () => {
   }
 
   const clearDraft = () => {
-    const confirmClear = confirm('Are you sure you want to clear this draft?')
-    if (confirmClear) {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(DRAFT_KEY)
-      }
-      setTitle('')
-      setSubtitle('')
-      setTag('')
-      setslug('')
-      setContent('<p>Start writing here...</p>')
-      setBannerUrl('')
-      toast.success('Draft cleared')
-    }
+    if (!confirm('Are you sure you want to clear this draft?')) return
+    localStorage.removeItem(DRAFT_KEY)
+    setTitle(''); setSubtitle(''); setTag(''); setslug('')
+    setContent(EMPTY_CONTENT); setEditorContent(EMPTY_CONTENT); setBannerUrl('')
+    toast.success('Draft cleared')
   }
 
-  const generateSlug = (text) => {
-    return text
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w\-]+/g, '')
-      .replace(/\-\-+/g, '-')
-  }
+  const generateSlug = (text) => text.toString().toLowerCase().trim()
+    .replace(/\s+/g, '-').replace(/[^\w\-]+/g, '').replace(/\-\-+/g, '-')
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Create Article</h1>
-          <Button variant="outline" onClick={clearDraft}>
-            Clear Draft
-          </Button>
+          <Button variant="outline" onClick={clearDraft}>Clear Draft</Button>
         </div>
 
-        {/* Title */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Title</label>
           <Input
@@ -495,99 +796,66 @@ const Page = () => {
           />
         </div>
 
-        {/* Subtitle */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Subtitle</label>
-          <Input
-            placeholder="Enter subtitle for your article..."
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-          />
+          <Input placeholder="Enter subtitle for your article..."
+            value={subtitle} onChange={(e) => setSubtitle(e.target.value)} />
         </div>
 
-        {/* Slug */}
         <div className="space-y-2 flex flex-col w-full">
           <label className="text-sm font-medium text-gray-700">Slug</label>
-          <Input
-            type='text'
-            placeholder="auto-generated-slug"
-            value={slug}
-            readOnly
-          />
+          <Input type='text' placeholder="auto-generated-slug" value={slug} readOnly />
         </div>
 
-        {/* Tag */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Tag</label>
-          <Input
-            placeholder="e.g. Next.js, Web Dev, Life"
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-          />
+          <Input placeholder="e.g. Next.js, Web Dev, Life"
+            value={tag} onChange={(e) => setTag(e.target.value)} />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700">
-            Article Banner Image Via Url
-          </label>
-          <Input
-            placeholder="https://bannerimage.img"
-            value={bannerUrl}
-            onChange={(e) => setBannerUrl(e.target.value)}
-          />
+          <label className="text-sm font-medium text-gray-700">Article Banner Image Via Url</label>
+          <Input placeholder="https://bannerimage.img"
+            value={bannerUrl} onChange={(e) => setBannerUrl(e.target.value)} />
         </div>
 
-        {/* Banner image */}
         <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-700">
-            Article Banner Image
-          </label>
+          <label className="text-sm font-medium text-gray-700">Article Banner Image</label>
           <div className="flex items-center gap-3">
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleBannerChange}
-              disabled={uploadingBanner || removingBanner}
-            />
+            <Input type="file" accept="image/*" onChange={handleBannerChange}
+              disabled={uploadingBanner || removingBanner} />
             {bannerUrl && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRemoveBanner}
-                disabled={removingBanner}
-              >
+              <Button type="button" variant="outline" onClick={handleRemoveBanner}
+                disabled={removingBanner}>
                 {removingBanner ? 'Removing...' : 'Remove Banner'}
               </Button>
             )}
           </div>
-          {uploadingBanner && (
-            <p className="text-xs text-gray-500">Uploading banner...</p>
-          )}
+          {uploadingBanner && <p className="text-xs text-gray-500">Uploading banner...</p>}
           {bannerUrl && (
             <div className="mt-2">
               <p className="text-xs text-gray-600 mb-1">Banner preview:</p>
-              <img
-                src={bannerUrl}
-                alt="Banner preview"
-                className="w-full rounded-xl border max-w-full max-h-64 object-contain"
-              />
+              <img src={bannerUrl} alt="Banner preview"
+                className="w-full rounded-xl border max-w-full max-h-64 object-contain" />
             </div>
           )}
         </div>
 
-        {/* Editor */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">Content</label>
-          <QuillEditor content={content} onChange={setContent} />
+          {/* ✅ Only mount QuillEditor AFTER we know the correct initial content */}
+          {/* This ensures defaultValue gets the draft content, not the empty default */}
+          {editorReady && (
+            <QuillEditor
+              content={editorContent}
+              onChange={setContent}
+            />
+          )}
         </div>
 
         <div className="pt-4 flex gap-3">
-          <Button type="button" onClick={handlePostCreation}>
-            Create Post
-          </Button>
-          <Button type="button" variant="secondary" onClick={clearDraft}>
-            Discard Draft
-          </Button>
+          <Button type="button" onClick={handlePostCreation}>Create Post</Button>
+          <Button type="button" variant="secondary" onClick={clearDraft}>Discard Draft</Button>
         </div>
       </div>
     </div>
