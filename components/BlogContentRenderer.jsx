@@ -968,6 +968,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism'
+import { toast } from 'sonner'
 
 // ─── Silent language detection — colors only, no label ever shown ─────────────
 function detectLang(code) {
@@ -1304,12 +1305,14 @@ function ArticleNotepad({ articleSlug }) {
   const save = () => {
     localStorage.setItem(key, note)
     setSaved(true)
+    toast.success("Notes saved successfully")
     setTimeout(() => setSaved(false), 2000)
   }
 
   const clear = () => {
     if (confirm('Clear your notes for this article?')) {
       localStorage.removeItem(key)
+      toast.success("Notes cleared successfully")
       setNote('')
     }
   }
