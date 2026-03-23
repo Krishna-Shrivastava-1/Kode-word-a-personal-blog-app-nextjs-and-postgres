@@ -760,67 +760,7 @@ export default function QuillEditor({ content = '', onChange }) {
     }, 100)
   }
 }, [])
-  // const videoHandler = useCallback(() => {
-  //   const quill = quillRef.current?.getEditor()
-  //   if (!quill) return
-  //   const range = quill.getSelection(true)
 
-  //   const choice = window.confirm(
-  //     'Click OK to upload a video file from your device.\nClick Cancel to embed a YouTube/Vimeo URL instead.'
-  //   )
-
-  //   if (choice) {
-  //     const input = document.createElement('input')
-  //     input.setAttribute('type', 'file')
-  //     input.setAttribute('accept', 'video/mp4,video/webm,video/mov,video/*')
-  //     input.click()
-  //     input.onchange = async () => {
-  //       const file = input.files?.[0]
-  //       if (!file) return
-  //       if (file.size > 100 * 1024 * 1024) {
-  //         alert('Video exceeds 100MB. Please compress it first.')
-  //         return
-  //       }
-  //       setUploadingVideo(true)
-  //       try {
-  //         const formData = new FormData()
-  //         formData.append('video', file)
-  //         const res = await fetch('/api/upload-video', { method: 'POST', body: formData })
-  //         const data = await res.json()
-  //         if (data.url) {
-  //           quill.insertEmbed(range.index, 'video', data.url)
-  //           quill.setSelection(range.index + 1)
-  //         } else {
-  //           alert('Video upload failed: ' + (data.error || 'Unknown error'))
-  //         }
-  //       } catch (err) {
-  //         console.error('Video upload error:', err)
-  //         alert('Video upload failed')
-  //       } finally {
-  //         setUploadingVideo(false)
-  //       }
-  //     }
-  //   } else {
-  //     window.scrollTo({ top: 0, behavior: 'smooth' })
-  //     setTimeout(() => {
-  //       const url = window.prompt('Enter YouTube or Vimeo URL:')
-  //       if (!url) return
-  //       let videoUrl = url.trim()
-  //       if (videoUrl.includes('youtube.com/watch')) {
-  //         const id = new URL(videoUrl).searchParams.get('v')
-  //         if (id) videoUrl = `https://www.youtube.com/embed/${id}`
-  //       } else if (videoUrl.includes('youtu.be/')) {
-  //         const id = videoUrl.split('youtu.be/')[1]?.split('?')[0]
-  //         if (id) videoUrl = `https://www.youtube.com/embed/${id}`
-  //       } else if (videoUrl.includes('vimeo.com/')) {
-  //         const id = videoUrl.split('vimeo.com/')[1]?.split('?')[0]
-  //         if (id) videoUrl = `https://player.vimeo.com/video/${id}`
-  //       }
-  //       quill.insertEmbed(range.index, 'video', videoUrl)
-  //       quill.setSelection(range.index + 1)
-  //     }, 100)
-  //   }
-  // }, [])
 
   const modules = useMemo(() => ({
     toolbar: {
