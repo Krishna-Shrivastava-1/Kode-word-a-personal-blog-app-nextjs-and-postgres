@@ -278,64 +278,30 @@ const Page = () => {
   const saveTimeoutRef = useRef(null)
 
   // Restore draft on mount
- 
   useEffect(() => {
-  if (typeof window === 'undefined') return
-  const savedDraft = localStorage.getItem(DRAFT_KEY)
-  if (!savedDraft) return
- 
-  try {
-    const draft = JSON.parse(savedDraft)
-    const shouldRestore = confirm('Found a saved draft. Would you like to restore it?')
-    if (!shouldRestore) return
- 
-    // Restore all form fields immediately via React state
-    setTitle(draft.title || '')
-    setSubtitle(draft.subtitle || '')
-    setTag(draft.tag || '')
-    setslug(draft.slug || '')
-    setBannerUrl(draft.bannerUrl || '')
-    setContent(draft.content || '<p>Start writing here...</p>')
- 
-    // Restore Quill editor content AFTER it has mounted
-    // The confirm() dialog already blocked JS long enough for most cases,
-    // but we add an explicit delay to be safe on page refresh
-    setTimeout(() => {
-      if (draft.content && window.__editorRestoreContent) {
-        window.__editorRestoreContent(draft.content)
+    if (typeof window !== 'undefined') {
+      const savedDraft = localStorage.getItem(DRAFT_KEY)
+      if (savedDraft) {
+        try {
+          const draft = JSON.parse(savedDraft)
+          const shouldRestore = confirm('Found a saved draft. Would you like to restore it?')
+          if (shouldRestore) {
+            setTitle(draft.title || '')
+            setSubtitle(draft.subtitle || '')
+            setTag(draft.tag || '')
+            setslug(draft.slug || '')
+            setContent(draft.content || '<p>Start writing here...</p>')
+            window.__editorRestoreContent?.(draft.content)
+  toast.success('Draft restored')
+            setBannerUrl(draft.bannerUrl || '')
+            toast.success('Draft restored')
+          }
+        } catch (error) {
+          console.error('Error restoring draft:', error)
+        }
       }
-    }, 500) // 500ms gives ReactQuill time to fully mount after dynamic import
- 
-    toast.success('Draft restored')
-  } catch (error) {
-    console.error('Error restoring draft:', error)
-  }
-}, [])
- 
-  // useEffect(() => {
-  //   if (typeof window !== 'undefined') {
-  //     const savedDraft = localStorage.getItem(DRAFT_KEY)
-  //     if (savedDraft) {
-  //       try {
-  //         const draft = JSON.parse(savedDraft)
-  //         const shouldRestore = confirm('Found a saved draft. Would you like to restore it?')
-  //         if (shouldRestore) {
-  //           setTitle(draft.title || '')
-  //           setSubtitle(draft.subtitle || '')
-  //           setTag(draft.tag || '')
-  //           setslug(draft.slug || '')
-  //           setContent(draft.content || '<p>Start writing here...</p>')
-  //           window.__editorRestoreContent?.(draft.content)
-  // toast.success('Draft restored')
-  //           setBannerUrl(draft.bannerUrl || '')
-  //           toast.success('Draft restored')
-  //         }
-  //       } catch (error) {
-  //         console.error('Error restoring draft:', error)
-  //       }
-  //     }
-  //   }
-  // }, [])
+    }
+  }, [])
 
   // Fetch logged user
   const fetchLoggedUser = async () => {
