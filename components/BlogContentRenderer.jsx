@@ -965,6 +965,7 @@
 
 
 'use client'
+import { ChevronLeft, ChevronRight, Play, Volume1, Volume2, VolumeX } from 'lucide-react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism'
@@ -1048,6 +1049,8 @@ function BackToTop() {
 }
 
 // ─── Protected Video Player ───────────────────────────────────────────────────
+
+
 function ProtectedVideoPlayer({ src }) {
   const videoRef = useRef(null)
   const containerRef = useRef(null)
@@ -1062,13 +1065,23 @@ function ProtectedVideoPlayer({ src }) {
   const [showControls, setShowControls] = useState(true)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const hideTimer = useRef(null)
+const pressTimer = useRef(null)
+const [isFastForward, setIsFastForward] = useState(false)
+const [actionLabel, setActionLabel] = useState('')
+const [showActionUI, setShowActionUI] = useState(false)
+const actionTimer = useRef(null)
+const wasLongPress = useRef(false)
 
   // Auto-optimize Cloudinary URLs — cuts file size 40-60% with no quality loss
   const optimizedSrc = src
   // const optimizedSrc = src.includes('res.cloudinary.com')
   //   ? src.replace('/upload/', '/upload/f_auto,q_auto/')
   //   : src
-
+const skip = (seconds) => {
+  const v = videoRef.current
+  if (!v) return
+  v.currentTime = Math.min(Math.max(0, v.currentTime + seconds), v.duration)
+}
   // Block right-click and drag in capture phase
   useEffect(() => {
     const container = containerRef.current
@@ -1122,19 +1135,36 @@ function ProtectedVideoPlayer({ src }) {
 
   // Capture thumbnail frame at 1s
   const captureThumbnail = useCallback(() => {
-    const v = videoRef.current
-    const canvas = canvasRef.current
-    if (!v || !canvas || thumbnail) return
-    canvas.width = v.videoWidth || 640
-    canvas.height = v.videoHeight || 360
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(v, 0, 0, canvas.width, canvas.height)
-    try {
-      setThumbnail(canvas.toDataURL('image/jpeg', 0.8))
-    } catch (e) {
-      // CORS may block — skip thumbnail silently
-    }
-  }, [thumbnail])
+  const v = videoRef.current
+  const canvas = canvasRef.current
+  if (!v || !canvas || thumbnail) return
+
+  if (v.readyState < 2) return // ensure frame exists
+
+  canvas.width = v.videoWidth || 640
+  canvas.height = v.videoHeight || 360
+
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(v, 0, 0, canvas.width, canvas.height)
+
+  try {
+    setThumbnail(canvas.toDataURL('image/jpeg', 0.8))
+  } catch (e) {}
+}, [thumbnail])
+  // const captureThumbnail = useCallback(() => {
+  //   const v = videoRef.current
+  //   const canvas = canvasRef.current
+  //   if (!v || !canvas || thumbnail) return
+  //   canvas.width = v.videoWidth || 640
+  //   canvas.height = v.videoHeight || 360
+  //   const ctx = canvas.getContext('2d')
+  //   ctx.drawImage(v, 0, 0, canvas.width, canvas.height)
+  //   try {
+  //     setThumbnail(canvas.toDataURL('image/jpeg', 0.8))
+  //   } catch (e) {
+  //     // CORS may block — skip thumbnail silently
+  //   }
+  // }, [thumbnail])
 
   const toggle = useCallback(() => {
     const v = videoRef.current
@@ -1154,6 +1184,52 @@ function ProtectedVideoPlayer({ src }) {
   useEffect(() => {
     return () => clearTimeout(hideTimer.current)
   }, [])
+const showAction = useCallback((text) => {
+  // Always clear previous timer FIRST
+  if (actionTimer.current) {
+    clearTimeout(actionTimer.current)
+  }
+
+  // Force update (even if same text)
+  setShowActionUI(false)
+
+  // Small delay ensures React applies state change cleanly
+  requestAnimationFrame(() => {
+    setActionLabel(text)
+    setShowActionUI(true)
+  })
+
+  // Set new hide timer
+  actionTimer.current = setTimeout(() => {
+    setShowActionUI(false)
+  }, 600)
+}, [])
+
+const handlePressStart = () => {
+  const v = videoRef.current
+  if (!v) return
+
+  wasLongPress.current = false
+
+  pressTimer.current = setTimeout(() => {
+    v.playbackRate = 2
+    setIsFastForward(true)
+
+    wasLongPress.current = true // 👈 mark long press
+  }, 300)
+}
+
+const handlePressEnd = () => {
+  const v = videoRef.current
+  if (!v) return
+
+  clearTimeout(pressTimer.current)
+
+  if (isFastForward) {
+    v.playbackRate = 1
+    setIsFastForward(false)
+  }
+}
 
   const fmt = (s) => {
     if (!s || isNaN(s)) return '0:00'
@@ -1162,9 +1238,75 @@ function ProtectedVideoPlayer({ src }) {
     return `${m}:${sec.toString().padStart(2, '0')}`
   }
 
+  const handleKeyDown = useCallback((e) => {
+  const v = videoRef.current
+  if (!v) return
+
+  switch (e.key.toLowerCase()) {
+    case ' ':
+      e.preventDefault() // prevent page scroll
+      toggle()
+      break
+
+    case 'arrowleft':
+      e.preventDefault()
+      showAction("< 5")
+      skip(-5)
+      break
+
+    case 'arrowright':
+      e.preventDefault()
+      showAction(`5 >`)
+      skip(5)
+      break
+
+    case 'f':
+      e.preventDefault()
+      toggleFullscreen(e)
+      break
+    case 'arrowup':
+      v.volume = Math.min(1, v.volume + 0.1)
+  setVolume(v.volume) 
+      showAction(`soundUp`)
+      break
+
+    case 'arrowdown':
+      v.volume = Math.max(0, v.volume - 0.1)
+         setVolume(v.volume) 
+      showAction(`soundDown`)
+      break
+    case 'm':
+      v.muted = !v.muted
+      setMuted(v.muted)
+  break
+    default:
+      break
+  }
+}, [toggle, skip, toggleFullscreen])
+useEffect(() => {
+  const container = containerRef.current
+  if (!container) return
+
+  container.addEventListener('keydown', handleKeyDown)
+
+  return () => {
+    container.removeEventListener('keydown', handleKeyDown)
+  }
+}, [handleKeyDown])
+
+useEffect(() => {
+  containerRef.current?.focus()
+}, [])
+
+useEffect(() => {
+  return () => {
+    clearTimeout(actionTimer.current)
+  }
+}, [])
   return (
     <div
       ref={containerRef}
+      tabIndex={0} 
       className="vid-player"
       onContextMenu={e => e.preventDefault()}
       onMouseMove={resetHideTimer}
@@ -1185,30 +1327,122 @@ function ProtectedVideoPlayer({ src }) {
 
       <video
         ref={videoRef}
+        preload="auto"
         src={optimizedSrc}
         className="vid-el"
         controlsList="nodownload noremoteplayback"
         disablePictureInPicture
         disableRemotePlayback
         playsInline
+         onMouseDown={handlePressStart}
+  onMouseUp={handlePressEnd}
+  onMouseLeave={handlePressEnd}
+  onTouchStart={handlePressStart}
+  onTouchEnd={handlePressEnd}
         muted={muted}
         onContextMenu={e => e.preventDefault()}
         onTimeUpdate={() => {
           const v = videoRef.current
           if (v) setProgress(v.duration ? (v.currentTime / v.duration) * 100 : 0)
         }}
-        onLoadedMetadata={() => {
-          const v = videoRef.current
-          if (v) { setDuration(v.duration); v.currentTime = 1 }
-        }}
+      onLoadedData={() => {
+  const v = videoRef.current
+  if (!v) return
+  setDuration(v.duration)
+
+  // Wait until frame is actually ready
+  if (v.readyState >= 2) {
+    v.currentTime = 1
+  }
+}}
+        // onLoadedMetadata={() => {
+        //   const v = videoRef.current
+        //   if (v) { setDuration(v.duration); v.currentTime = 1 }
+        // }}
         onSeeked={captureThumbnail}
         onEnded={() => { setPlaying(false); setShowControls(true) }}
-        onClick={toggle}
+        onClick={(e) => {
+    if (wasLongPress.current) {
+      e.preventDefault()
+      return
+    }
+    toggle()
+  }}
       />
+<div className={`vid-action-indicator ${showActionUI ? 'show' : ''}`}>
 
+  {actionLabel === "< 5" ? (
+    <div className="flex items-center gap-1">
+      <ChevronLeft size={18} />
+      <span>5</span>
+    </div>
+  ) : actionLabel === "5 >" ? (
+    <div className="flex items-center gap-1">
+      <span>5</span>
+      <ChevronRight size={18} />
+    </div>
+  ) : actionLabel === "soundUp" || actionLabel === "soundDown" ? (
+    <div className="flex items-center gap-2">
+      {videoRef.current?.volume === 0 ? (
+        <VolumeX size={20} />
+      ) : videoRef.current?.volume < 0.5 ? (
+        <Volume1 size={20} />
+      ) : (
+        <Volume2 size={20} />
+      )}
+      <span>{Math.round((videoRef.current?.volume || 0) * 100) > 0 && Math.round((videoRef.current?.volume || 0) * 100)+'%'}</span>
+    </div>
+  ) : (
+    actionLabel && <span>{actionLabel}</span>
+  )}
+
+</div>
+{isFastForward && (
+  <div className="vid-speed-indicator flex items-center">
+    2 <Play className='ml-1' fill='white' size={10} /><Play fill='white' size={10} />
+  </div>
+)}
       <div className="vid-gradient-mask"/>
 
-      {!playing && (
+{!playing && (
+  <div className="vid-overlay">
+
+    {/* Backward 5s */}
+  <div
+  className="vid-skip-btn vid-skip-left"
+  onClick={(e) => {
+    e.stopPropagation()
+    skip(-5)
+    showAction("< 5")
+  }}
+>
+  <ChevronLeft size={20} />
+  <span className="vid-skip-text">5</span>
+</div>
+
+    {/* Play Button */}
+    <div className="vid-play-btn" onClick={toggle}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    </div>
+
+    {/* Forward 5s */}
+   <div
+  className="vid-skip-btn vid-skip-right"
+  onClick={(e) => {
+    e.stopPropagation()
+    skip(5)
+    showAction("5 >")
+  }}
+>
+  <span className="vid-skip-text">5</span>
+  <ChevronRight size={20} />
+</div>
+
+  </div>
+)}
+      {/* {!playing && (
         <div className="vid-overlay" onClick={toggle}>
           <div className="vid-play-btn">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
@@ -1216,9 +1450,10 @@ function ProtectedVideoPlayer({ src }) {
             </svg>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className={`vid-controls${showControls ? ' visible' : ''}`} onClick={e => e.stopPropagation()}>
+        
         <button className="vid-ctrl-btn" onClick={toggle}>
           {playing ? (
             <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -1774,6 +2009,103 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
           display:flex; align-items:center; justify-content:center;
           z-index:2;
         }
+          .vid-play-btn {
+  z-index: 2;
+  cursor: pointer;
+}
+.vid-speed-indicator {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  background: rgba(255,255,255,0.15);
+  color: white;
+
+  padding: 10px 16px;
+  border-radius: 24px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  pointer-events: none;
+  z-index: 6;
+
+  backdrop-filter: blur(6px);
+}
+/* Skip buttons */
+.vid-skip-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+
+  background:rgba(255,255,255,0.15);
+          backdrop-filter:blur(12px);
+
+  color: white;
+  cursor: pointer;
+  z-index: 2;
+
+  transition: all 0.2s ease;
+}
+
+.vid-skip-btn:hover {
+          background:rgba(255,255,255,0.25);
+}
+
+/* Text inside button */
+.vid-skip-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+          .vid-skip-left {
+  left: 5%;
+}
+
+.vid-skip-right {
+  right: 5%;
+}
+ .vid-action-indicator {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+
+  background: rgba(255,255,255,0.15);
+  color: white;
+  padding: 8px 14px;
+  border-radius: 20px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  pointer-events: none;
+  z-index: 5;
+
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.vid-action-indicator.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -60%); }
+  20% { opacity: 1; transform: translate(-50%, -50%); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
         .vid-play-btn {
           width:68px; height:68px; border-radius:50%;
           background:rgba(255,255,255,0.15);
