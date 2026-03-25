@@ -2062,7 +2062,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
           background:rgba(0,0,0,0.45);
 }
 
-/* Text inside button */
+/* Text inside buttons */
 .vid-skip-text {
   font-size: 12px;
   font-weight: 600;
