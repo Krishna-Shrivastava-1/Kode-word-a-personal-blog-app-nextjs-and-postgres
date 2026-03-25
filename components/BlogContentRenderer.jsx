@@ -2019,7 +2019,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
   left: 50%;
   transform: translate(-50%, -50%);
   
-  background: rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.45);
   color: white;
 
   padding: 10px 16px;
@@ -2048,7 +2048,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
   justify-content: center;
   gap: 2px;
 
-  background:rgba(255,255,255,0.15);
+  background:rgba(0,0,0,0.35);
           backdrop-filter:blur(12px);
 
   color: white;
@@ -2059,7 +2059,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
 }
 
 .vid-skip-btn:hover {
-          background:rgba(255,255,255,0.25);
+          background:rgba(0,0,0,0.45);
 }
 
 /* Text inside button */
@@ -2080,7 +2080,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
   left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
 
-  background: rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.35);
   color: white;
   padding: 8px 14px;
   border-radius: 20px;
@@ -2108,7 +2108,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
 }
         .vid-play-btn {
           width:68px; height:68px; border-radius:50%;
-          background:rgba(255,255,255,0.15);
+          background:rgba(0,0,0,0.35);
           backdrop-filter:blur(12px);
           -webkit-backdrop-filter:blur(12px);
           border:1.5px solid rgba(255,255,255,0.3);
@@ -2122,7 +2122,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
         }
         .vid-overlay:hover .vid-play-btn {
           transform:scale(1.1);
-          background:rgba(255,255,255,0.25);
+          background:rgba(0,0,0,0.45);
         }
         /* Glassmorphism controls bar */
         .vid-controls {
