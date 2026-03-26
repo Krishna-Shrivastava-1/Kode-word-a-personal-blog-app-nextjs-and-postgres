@@ -1374,11 +1374,11 @@ useEffect(() => {
   {actionLabel === "< 5" ? (
     <div className="flex items-center gap-1">
       <ChevronLeft size={18} />
-      <span>5</span>
+      <span>5s</span>
     </div>
   ) : actionLabel === "5 >" ? (
     <div className="flex items-center gap-1">
-      <span>5</span>
+      <span>5s</span>
       <ChevronRight size={18} />
     </div>
   ) : actionLabel === "soundUp" || actionLabel === "soundDown" ? (
@@ -1399,10 +1399,10 @@ useEffect(() => {
 </div>
 {isFastForward && (
   <div className="vid-speed-indicator flex items-center">
-    2 <Play className='ml-1' fill='white' size={10} /><Play fill='white' size={10} />
+    2x <Play className='ml-1' fill='white' size={8} /><Play fill='white' size={8} />
   </div>
 )}
-      <div className="vid-gradient-mask"/>
+      {/* <div className="vid-gradient-mask"/>  Black mask overlay bottom on video */}
 
 {!playing && (
   <div className="vid-overlay">
@@ -2129,7 +2129,7 @@ export default function BlogContentRenderer({ content, wordCount, articleSlug = 
           position:absolute; bottom:0; left:0; right:0; z-index:3;
           display:flex; align-items:center; gap:10px;
           padding:10px 14px 12px;
-          background:rgba(0,0,0,0.35);
+          background:rgba(0,0,0,0.75);
           backdrop-filter:blur(16px);
           -webkit-backdrop-filter:blur(16px);
           border-top:1px solid rgba(255,255,255,0.08);
