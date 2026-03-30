@@ -996,148 +996,340 @@ useEffect(() => {
           className="quill-editor"
         />
       </div>
+<style jsx global>{`
+  .editor-shell { max-width: 56rem; margin: 0 auto; }
+  .editor-fullscreen {
+    position: fixed !important; inset: 0 !important; z-index: 9999 !important;
+    max-width: 100% !important; background: white !important;
+    display: flex !important; flex-direction: column !important;
+  }
+  .editor-fullscreen .editor-body { flex: 1; overflow-y: auto; border-radius: 0 !important; }
+  .editor-fullscreen .editor-body .ql-editor { max-height: none !important; min-height: calc(100vh - 100px) !important; }
+  .editor-fullscreen .quill-editor .ql-toolbar { border-radius: 0 !important; }
 
-      <style jsx global>{`
-        .editor-shell { max-width: 56rem; margin: 0 auto; }
-        .editor-fullscreen {
-          position: fixed !important; inset: 0 !important; z-index: 9999 !important;
-          max-width: 100% !important; background: white !important;
-          display: flex !important; flex-direction: column !important;
-        }
-        .editor-fullscreen .editor-body { flex: 1; overflow-y: auto; border-radius: 0 !important; }
-        .editor-fullscreen .editor-body .ql-editor { max-height: none !important; min-height: calc(100vh - 100px) !important; }
-        .editor-fullscreen .quill-editor .ql-toolbar { border-radius: 0 !important; }
+  .editor-statusbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 14px; background: #f8fafc;
+    border: 1px solid #e2e8f0; border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    font-size: 12px; color: #94a3b8;
+    /* Matched to modern body font */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .editor-counts { display: flex; align-items: center; gap: 5px; }
+  .editor-sep { opacity: 0.4; }
+  .editor-actions-bar { display: flex; align-items: center; gap: 10px; }
+  .save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; }
+  .save-indicator.saving { color: #f59e0b; }
+  .save-indicator.saved  { color: #10b981; }
+  .spin { animation: editorSpin 0.9s linear infinite; }
+  @keyframes editorSpin { to { transform: rotate(360deg); } }
+  .fullscreen-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    border: 1px solid #e2e8f0; background: white; color: #64748b;
+    transition: all 0.15s; font-family: inherit;
+  }
+  .fullscreen-btn:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
 
-        .editor-statusbar {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 6px 14px; background: #f8fafc;
-          border: 1px solid #e2e8f0; border-bottom: none;
-          border-radius: 16px 16px 0 0;
-          font-size: 12px; color: #94a3b8;
-          font-family: 'DM Sans', -apple-system, sans-serif;
-        }
-        .editor-counts { display: flex; align-items: center; gap: 5px; }
-        .editor-sep { opacity: 0.4; }
-        .editor-actions-bar { display: flex; align-items: center; gap: 10px; }
-        .save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; }
-        .save-indicator.saving { color: #f59e0b; }
-        .save-indicator.saved  { color: #10b981; }
-        .spin { animation: editorSpin 0.9s linear infinite; }
-        @keyframes editorSpin { to { transform: rotate(360deg); } }
-        .fullscreen-btn {
-          display: inline-flex; align-items: center; gap: 5px;
-          padding: 3px 10px; border-radius: 6px;
-          font-size: 12px; font-weight: 500; cursor: pointer;
-          border: 1px solid #e2e8f0; background: white; color: #64748b;
-          transition: all 0.15s; font-family: inherit;
-        }
-        .fullscreen-btn:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+  .editor-body {
+    background: white; border-radius: 0 0 16px 16px;
+    overflow: hidden; border: 1px solid #e2e8f0; border-top: none;
+  }
+  .quill-editor .ql-toolbar {
+    position: sticky; top: 0; z-index: 100; background: white;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  }
+  .quill-editor .ql-container {
+    border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; border-top: none;
+  }
+  
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     BASE EDITOR TEXT (Synced to Reader)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .quill-editor .ql-editor {
+    min-height: 500px; max-height: calc(100vh - 200px);
+    padding: 28px 32px; overflow-y: auto;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-size: clamp(1rem, 2.2vw, 1.075rem) !important;
+    line-height: 1.8 !important; 
+    color: #1e293b !important;
+    -webkit-font-smoothing: antialiased;
+  }
+  .quill-editor .ql-editor.ql-blank::before { 
+    color: #cbd5e1; font-style: normal; 
+    font-size: clamp(1rem, 2.2vw, 1.075rem) !important; 
+  }
 
-        .editor-body {
-          background: white; border-radius: 0 0 16px 16px;
-          overflow: hidden; border: 1px solid #e2e8f0; border-top: none;
-        }
-        .quill-editor .ql-toolbar {
-          position: sticky; top: 0; z-index: 100; background: white;
-          box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-        }
-        .quill-editor .ql-container {
-          border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; border-top: none;
-        }
-        .quill-editor .ql-editor {
-          min-height: 500px; max-height: calc(100vh - 200px);
-          padding: 28px 32px; overflow-y: auto;
-          font-family: 'DM Sans', -apple-system, sans-serif;
-          font-size: 1rem; line-height: 1.875; color: #374151;
-        }
-        .quill-editor .ql-editor.ql-blank::before { color: #cbd5e1; font-style: normal; font-size: 1rem; }
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     HEADINGS (Outfit - Synced to Reader)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .quill-editor .ql-editor h1 {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: clamp(1.6rem, 4vw, 2.2rem) !important;
+    font-weight: 700 !important; line-height: 1.2 !important; color: #0f172a !important;
+    margin: 2.5rem 0 1rem !important; letter-spacing: -0.03em !important;
+    padding-bottom: 0.6rem !important; border-bottom: 2px solid #f1f5f9 !important;
+  }
+  .quill-editor .ql-editor h2 {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: clamp(1.3rem, 3vw, 1.6rem) !important;
+    font-weight: 600 !important; line-height: 1.3 !important; color: #0f172a !important;
+    margin: 2rem 0 0.75rem !important; letter-spacing: -0.02em !important;
+  }
+  .quill-editor .ql-editor h3 {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: clamp(1.1rem, 2.2vw, 1.25rem) !important;
+    font-weight: 600 !important; line-height: 1.4 !important;
+    color: #1e293b !important; margin: 1.6rem 0 0.6rem !important;
+    letter-spacing: -0.01em !important;
+  }
 
-        .quill-editor .ql-editor h1 {
-          font-size: clamp(1.3rem, 3.6vw, 1.85rem) !important;
-          font-weight: 600 !important; line-height: 1.25 !important; color: #0f172a !important;
-          margin: 2rem 0 0.75rem !important; letter-spacing: -0.02em !important;
-          padding-bottom: 0.5rem !important; border-bottom: 1px solid #f1f5f9 !important;
-        }
-        .quill-editor .ql-editor h2 {
-          font-size: clamp(1.1rem, 2.8vw, 1.45rem) !important;
-          font-weight: 600 !important; line-height: 1.3 !important; color: #0f172a !important;
-          margin: 1.875rem 0 0.625rem !important; letter-spacing: -0.015em !important;
-        }
-        .quill-editor .ql-editor h3 {
-          font-size: clamp(0.95rem, 2.2vw, 1.1rem) !important;
-          font-weight: 600 !important; line-height: 1.4 !important;
-          color: #1e293b !important; margin: 1.5rem 0 0.45rem !important;
-        }
-        .quill-editor .ql-editor p {
-          font-size: 1rem !important; line-height: 1.875 !important;
-          color: #374151 !important; margin: 0 0 1.1rem !important;
-        }
-        .quill-editor .ql-editor blockquote {
-          border-left: 3px solid #2563eb !important; background: #f8faff !important;
-          padding: 1rem 1.5rem !important; border-radius: 0 8px 8px 0 !important;
-          font-style: italic !important; color: #1e3a5f !important; margin: 1.5rem 0 !important;
-        }
-        .quill-editor .ql-editor pre {
-          position: relative !important; background: #0d1117 !important;
-          border-radius: 10px !important; padding: 2.5rem 1.25rem 1.25rem !important;
-          margin: 1.5rem 0 !important; overflow-x: auto !important;
-          border: 1px solid #1e293b !important; color: #e2e8f0 !important;
-          font-family: 'JetBrains Mono','Fira Code',monospace !important;
-          font-size: 0.875rem !important; line-height: 1.75 !important;
-        }
-        .quill-editor .ql-editor img {
-          max-width: 100% !important; height: auto !important;
-          border-radius: 10px !important; margin: 1.5rem 0 !important;
-          display: block !important; border: 1px solid #e2e8f0 !important;
-          transition: border-color 0.2s, box-shadow 0.2s !important;
-        }
-        .quill-editor .ql-editor img:hover {
-          border-color: #2563eb !important;
-          box-shadow: 0 4px 20px rgba(37,99,235,0.12) !important;
-        }
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     BOLD FIX (Synced to Reader)
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .quill-editor .ql-editor strong,
+  .quill-editor .ql-editor b {
+    font-weight: 600 !important;
+    color: #0f172a !important;
+  }
+  .quill-editor .ql-editor h1 strong, .quill-editor .ql-editor h1 b,
+  .quill-editor .ql-editor h2 strong, .quill-editor .ql-editor h2 b,
+  .quill-editor .ql-editor h3 strong, .quill-editor .ql-editor h3 b {
+    font-weight: 800 !important; /* Extra heavy inside headings */
+    color: inherit !important;
+  }
 
-        /* Custom video blot */
-        .quill-editor .ql-editor .ql-video-wrapper {
-          position: relative; margin: 1.5rem 0;
-          border-radius: 10px; overflow: hidden;
-        }
-        .quill-editor .ql-editor .ql-video-wrapper video {
-          width: 100% !important; display: block !important;
-          border-radius: 10px !important; max-height: 420px !important; background: #000 !important;
-        }
-        .quill-editor .ql-editor .ql-video-wrapper iframe {
-          width: 100% !important; height: 400px !important;
-          display: block !important; border: none !important; border-radius: 10px !important;
-        }
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     PARAGRAPHS & ELEMENTS
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  .quill-editor .ql-editor p {
+    font-size: clamp(1rem, 2.2vw, 1.075rem) !important; 
+    line-height: 1.8 !important;
+    color: #334155 !important; margin: 0 0 1.25rem !important;
+  }
+  .quill-editor .ql-editor blockquote {
+    border-left: 4px solid #3b82f6 !important; 
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%) !important;
+    padding: 1.25rem 1.5rem 1.25rem 2rem !important; 
+    border-radius: 0 12px 12px 0 !important;
+    font-style: italic !important; color: #334155 !important; 
+    margin: 2rem 0 !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: clamp(1rem, 2vw, 1.05rem) !important;
+  }
+  .quill-editor .ql-editor pre {
+    position: relative !important; background: #0d1117 !important;
+    border-radius: 12px !important; padding: 2.5rem 1.25rem 1.25rem !important;
+    margin: 1.5rem 0 !important; overflow-x: auto !important;
+    border: 1px solid #1e293b !important; color: #e2e8f0 !important;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 0.85rem !important; line-height: 1.75 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+  }
+  .quill-editor .ql-editor img {
+    max-width: 100% !important; height: auto !important;
+    border-radius: 12px !important; margin: 1.75rem auto !important;
+    display: block !important; border: 1px solid #e2e8f0 !important;
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  }
+  .quill-editor .ql-editor img:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
+  }
 
-        .quill-editor .ql-editor ul li,
-        .quill-editor .ql-editor ol li {
-          line-height: 1.75 !important; color: #374151 !important; margin-bottom: 0.4rem !important;
-        }
-        .quill-editor .ql-editor a { color: #2563eb !important; }
+  /* Custom video blot */
+  .quill-editor .ql-editor .ql-video-wrapper {
+    position: relative; margin: 2rem 0;
+    border-radius: 16px; overflow: hidden;
+  }
+  .quill-editor .ql-editor .ql-video-wrapper video {
+    width: 100% !important; display: block !important;
+    border-radius: 16px !important; max-height: 480px !important; background: #000 !important;
+  }
+  .quill-editor .ql-editor .ql-video-wrapper iframe {
+    width: 100% !important; height: clamp(220px, 45vw, 440px) !important;
+    display: block !important; border: none !important; border-radius: 12px !important;
+  }
 
-        .copy-code-btn {
-          position: absolute; top: 8px; right: 8px;
-          display: flex; align-items: center; gap: 5px;
-          padding: 5px 10px; background: #1e293b; color: #94a3b8;
-          border: 1px solid #334155; border-radius: 6px;
-          font-size: 12px; font-weight: 500; cursor: pointer;
-          transition: all 0.18s; z-index: 10; font-family: system-ui, sans-serif !important;
-        }
-        .copy-code-btn:hover { background: #334155; color: #e2e8f0; }
-        .copy-code-btn.copied { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
+  .quill-editor .ql-editor ul li,
+  .quill-editor .ql-editor ol li {
+    line-height: 1.8 !important; color: #334155 !important; margin-bottom: 0.5rem !important;
+  }
+  .quill-editor .ql-editor a { 
+    color: #2563eb !important; 
+    text-decoration: underline !important;
+    text-underline-offset: 4px !important;
+  }
 
-        .video-delete-btn {
-          position: absolute !important; top: 10px !important; right: 10px !important;
-          display: flex !important; align-items: center !important; justify-content: center !important;
-          width: 34px !important; height: 34px !important;
-          background: rgba(220,38,38,0.9) !important; color: white !important;
-          border: 2px solid white !important; border-radius: 8px !important;
-          cursor: pointer !important; z-index: 1000 !important;
-          transition: all 0.18s !important; box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
-        }
-        .video-delete-btn:hover { background: rgb(185,28,28) !important; transform: scale(1.08) !important; }
-      `}</style>
+  .copy-code-btn {
+    position: absolute; top: 8px; right: 8px;
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px; background: #1e293b; color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s; z-index: 10; font-family: 'Inter', sans-serif !important;
+  }
+  .copy-code-btn:hover { background: rgba(255,255,255,0.05); color: #f8fafc; border-color: rgba(255,255,255,0.2); }
+  .copy-code-btn.copied { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+
+  .video-delete-btn {
+    position: absolute !important; top: 10px !important; right: 10px !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    width: 34px !important; height: 34px !important;
+    background: rgba(220,38,38,0.9) !important; color: white !important;
+    border: 2px solid white !important; border-radius: 8px !important;
+    cursor: pointer !important; z-index: 1000 !important;
+    transition: all 0.18s !important; box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+  }
+  .video-delete-btn:hover { background: rgb(185,28,28) !important; transform: scale(1.08) !important; }
+`}</style>
+     
     </div>
   )
 }
+
+
+
+// Old CSS
+//  <style jsx global>{`
+//         .editor-shell { max-width: 56rem; margin: 0 auto; }
+//         .editor-fullscreen {
+//           position: fixed !important; inset: 0 !important; z-index: 9999 !important;
+//           max-width: 100% !important; background: white !important;
+//           display: flex !important; flex-direction: column !important;
+//         }
+//         .editor-fullscreen .editor-body { flex: 1; overflow-y: auto; border-radius: 0 !important; }
+//         .editor-fullscreen .editor-body .ql-editor { max-height: none !important; min-height: calc(100vh - 100px) !important; }
+//         .editor-fullscreen .quill-editor .ql-toolbar { border-radius: 0 !important; }
+
+//         .editor-statusbar {
+//           display: flex; justify-content: space-between; align-items: center;
+//           padding: 6px 14px; background: #f8fafc;
+//           border: 1px solid #e2e8f0; border-bottom: none;
+//           border-radius: 16px 16px 0 0;
+//           font-size: 12px; color: #94a3b8;
+//           font-family: 'DM Sans', -apple-system, sans-serif;
+//         }
+//         .editor-counts { display: flex; align-items: center; gap: 5px; }
+//         .editor-sep { opacity: 0.4; }
+//         .editor-actions-bar { display: flex; align-items: center; gap: 10px; }
+//         .save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; }
+//         .save-indicator.saving { color: #f59e0b; }
+//         .save-indicator.saved  { color: #10b981; }
+//         .spin { animation: editorSpin 0.9s linear infinite; }
+//         @keyframes editorSpin { to { transform: rotate(360deg); } }
+//         .fullscreen-btn {
+//           display: inline-flex; align-items: center; gap: 5px;
+//           padding: 3px 10px; border-radius: 6px;
+//           font-size: 12px; font-weight: 500; cursor: pointer;
+//           border: 1px solid #e2e8f0; background: white; color: #64748b;
+//           transition: all 0.15s; font-family: inherit;
+//         }
+//         .fullscreen-btn:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
+
+//         .editor-body {
+//           background: white; border-radius: 0 0 16px 16px;
+//           overflow: hidden; border: 1px solid #e2e8f0; border-top: none;
+//         }
+//         .quill-editor .ql-toolbar {
+//           position: sticky; top: 0; z-index: 100; background: white;
+//           box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+//         }
+//         .quill-editor .ql-container {
+//           border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; border-top: none;
+//         }
+//         .quill-editor .ql-editor {
+//           min-height: 500px; max-height: calc(100vh - 200px);
+//           padding: 28px 32px; overflow-y: auto;
+//           font-family: 'DM Sans', -apple-system, sans-serif;
+//           font-size: 1rem; line-height: 1.875; color: #374151;
+//         }
+//         .quill-editor .ql-editor.ql-blank::before { color: #cbd5e1; font-style: normal; font-size: 1rem; }
+
+//         .quill-editor .ql-editor h1 {
+//           font-size: clamp(1.3rem, 3.6vw, 1.85rem) !important;
+//           font-weight: 600 !important; line-height: 1.25 !important; color: #0f172a !important;
+//           margin: 2rem 0 0.75rem !important; letter-spacing: -0.02em !important;
+//           padding-bottom: 0.5rem !important; border-bottom: 1px solid #f1f5f9 !important;
+//         }
+//         .quill-editor .ql-editor h2 {
+//           font-size: clamp(1.1rem, 2.8vw, 1.45rem) !important;
+//           font-weight: 600 !important; line-height: 1.3 !important; color: #0f172a !important;
+//           margin: 1.875rem 0 0.625rem !important; letter-spacing: -0.015em !important;
+//         }
+//         .quill-editor .ql-editor h3 {
+//           font-size: clamp(0.95rem, 2.2vw, 1.1rem) !important;
+//           font-weight: 600 !important; line-height: 1.4 !important;
+//           color: #1e293b !important; margin: 1.5rem 0 0.45rem !important;
+//         }
+//         .quill-editor .ql-editor p {
+//           font-size: 1rem !important; line-height: 1.875 !important;
+//           color: #374151 !important; margin: 0 0 1.1rem !important;
+//         }
+//         .quill-editor .ql-editor blockquote {
+//           border-left: 3px solid #2563eb !important; background: #f8faff !important;
+//           padding: 1rem 1.5rem !important; border-radius: 0 8px 8px 0 !important;
+//           font-style: italic !important; color: #1e3a5f !important; margin: 1.5rem 0 !important;
+//         }
+//         .quill-editor .ql-editor pre {
+//           position: relative !important; background: #0d1117 !important;
+//           border-radius: 10px !important; padding: 2.5rem 1.25rem 1.25rem !important;
+//           margin: 1.5rem 0 !important; overflow-x: auto !important;
+//           border: 1px solid #1e293b !important; color: #e2e8f0 !important;
+//           font-family: 'JetBrains Mono','Fira Code',monospace !important;
+//           font-size: 0.875rem !important; line-height: 1.75 !important;
+//         }
+//         .quill-editor .ql-editor img {
+//           max-width: 100% !important; height: auto !important;
+//           border-radius: 10px !important; margin: 1.5rem 0 !important;
+//           display: block !important; border: 1px solid #e2e8f0 !important;
+//           transition: border-color 0.2s, box-shadow 0.2s !important;
+//         }
+//         .quill-editor .ql-editor img:hover {
+//           border-color: #2563eb !important;
+//           box-shadow: 0 4px 20px rgba(37,99,235,0.12) !important;
+//         }
+
+//         /* Custom video blot */
+//         .quill-editor .ql-editor .ql-video-wrapper {
+//           position: relative; margin: 1.5rem 0;
+//           border-radius: 10px; overflow: hidden;
+//         }
+//         .quill-editor .ql-editor .ql-video-wrapper video {
+//           width: 100% !important; display: block !important;
+//           border-radius: 10px !important; max-height: 420px !important; background: #000 !important;
+//         }
+//         .quill-editor .ql-editor .ql-video-wrapper iframe {
+//           width: 100% !important; height: 400px !important;
+//           display: block !important; border: none !important; border-radius: 10px !important;
+//         }
+
+//         .quill-editor .ql-editor ul li,
+//         .quill-editor .ql-editor ol li {
+//           line-height: 1.75 !important; color: #374151 !important; margin-bottom: 0.4rem !important;
+//         }
+//         .quill-editor .ql-editor a { color: #2563eb !important; }
+
+//         .copy-code-btn {
+//           position: absolute; top: 8px; right: 8px;
+//           display: flex; align-items: center; gap: 5px;
+//           padding: 5px 10px; background: #1e293b; color: #94a3b8;
+//           border: 1px solid #334155; border-radius: 6px;
+//           font-size: 12px; font-weight: 500; cursor: pointer;
+//           transition: all 0.18s; z-index: 10; font-family: system-ui, sans-serif !important;
+//         }
+//         .copy-code-btn:hover { background: #334155; color: #e2e8f0; }
+//         .copy-code-btn.copied { background: #064e3b; color: #6ee7b7; border-color: #065f46; }
+
+//         .video-delete-btn {
+//           position: absolute !important; top: 10px !important; right: 10px !important;
+//           display: flex !important; align-items: center !important; justify-content: center !important;
+//           width: 34px !important; height: 34px !important;
+//           background: rgba(220,38,38,0.9) !important; color: white !important;
+//           border: 2px solid white !important; border-radius: 8px !important;
+//           cursor: pointer !important; z-index: 1000 !important;
+//           transition: all 0.18s !important; box-shadow: 0 2px 8px rgba(0,0,0,0.22) !important;
+//         }
+//         .video-delete-btn:hover { background: rgb(185,28,28) !important; transform: scale(1.08) !important; }
+//       `}</style>
