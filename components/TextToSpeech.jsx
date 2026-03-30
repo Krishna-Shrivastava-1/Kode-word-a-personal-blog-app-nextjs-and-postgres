@@ -246,10 +246,10 @@ const TextToSpeech = ({ content }) => {
   const [seconds, setSeconds] = useState(0);
   const [voices, setVoices] = useState([]); 
   
-  // Refs for bulletproof memory management
-  const utterancesRef = useRef([]);
+  // Refs for bulletproof sequential playback
   const sentencesRef = useRef([]);
-  const currentIndexRef = useRef(0); // Tracks exactly which sentence we are on
+  const currentIndexRef = useRef(0);
+  const isCancelledRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
@@ -265,6 +265,8 @@ const TextToSpeech = ({ content }) => {
     window.speechSynthesis.onvoiceschanged = fetchVoices;
 
     return () => {
+      // FIX: Always resume before canceling on unmount to prevent browser get-stuck bugs
+      window.speechSynthesis.resume();
       window.speechSynthesis.cancel();
       window.speechSynthesis.onvoiceschanged = null;
     };
@@ -313,7 +315,6 @@ const TextToSpeech = ({ content }) => {
 
   const getBestVoice = () => {
     if (voices.length === 0) return null;
-
     return (
       voices.find(v => v.name.includes('Google US English')) || 
       voices.find(v => v.name.includes('Samantha')) ||          
@@ -326,10 +327,48 @@ const TextToSpeech = ({ content }) => {
     );
   };
 
-  const handlePlay = () => {
-    const synth = window.speechSynthesis;
+  const playNextSentence = () => {
+    if (isCancelledRef.current) return;
 
-    // 1. If we haven't extracted sentences yet, do it now
+    if (currentIndexRef.current >= sentencesRef.current.length) {
+      handleStop();
+      return;
+    }
+
+    const sentence = sentencesRef.current[currentIndexRef.current];
+    const utterance = new SpeechSynthesisUtterance(sentence);
+    const bestVoice = getBestVoice();
+    
+    if (bestVoice) utterance.voice = bestVoice;
+    utterance.rate = 0.92; 
+    utterance.pitch = 1.0; 
+
+    utterance.onend = () => {
+      if (isCancelledRef.current) return; 
+      currentIndexRef.current += 1;
+      playNextSentence();
+    };
+
+    utterance.onerror = (e) => {
+      if (isCancelledRef.current || e.error === 'interrupted' || e.error === 'canceled') return;
+      console.warn("Skipping broken sentence:", e);
+      currentIndexRef.current += 1;
+      playNextSentence();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handlePlay = () => {
+    // FIX 1: If we are paused, safely resume right where we left off
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setIsPlaying(true);
+      return;
+    }
+
+    // Otherwise proceed with fresh start
     if (sentencesRef.current.length === 0) {
       const plainText = extractReadableText(content);
       const rawSentences = plainText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [plainText];
@@ -338,74 +377,39 @@ const TextToSpeech = ({ content }) => {
 
     if (sentencesRef.current.length === 0) return;
 
-    // 2. Cancel any background speech and immediately invalidate old queue
-    synth.cancel();
-    utterancesRef.current = [];
-
-    // Reset timer only if we are starting from the very beginning
-    if (currentIndexRef.current === 0) {
-      setSeconds(0);
-    }
-
-    const bestVoice = getBestVoice();
-
-    // 3. Queue sentences starting FROM the exact saved index
-    for (let i = currentIndexRef.current; i < sentencesRef.current.length; i++) {
-      const sentence = sentencesRef.current[i];
-      const utterance = new SpeechSynthesisUtterance(sentence);
-      
-      if (bestVoice) {
-        utterance.voice = bestVoice;
-      }
-      
-      utterance.rate = 0.92; 
-      utterance.pitch = 1.0; 
-
-      // Track exact position, BUT only if this utterance is part of the ACTIVE queue
-      utterance.onstart = () => {
-        if (!utterancesRef.current.includes(utterance)) return;
-        currentIndexRef.current = i;
-      };
-
-      // When reaching the end natively, stop
-      utterance.onend = () => {
-        if (!utterancesRef.current.includes(utterance)) return;
-        if (i === sentencesRef.current.length - 1) {
-          handleStop();
-        }
-      };
-
-      utterance.onerror = (e) => {
-        if (e.error !== 'canceled' && e.error !== 'interrupted') {
-          console.error('Speech error:', e);
-        }
-      };
-
-      // Push to our active validation array
-      utterancesRef.current.push(utterance);
-      synth.speak(utterance);
-    }
-
+    isCancelledRef.current = false;
     setIsPlaying(true);
     setIsPaused(false);
+    
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      window.speechSynthesis.cancel();
+    }
+
+    playNextSentence();
   };
 
   const handlePause = () => {
-    // BUG FIX: Invalidating the utterances array instantly stops the "onend" event 
-    // from resetting our currentIndexRef to 0 when the queue is destroyed.
-    window.speechSynthesis.cancel();
-    utterancesRef.current = []; // <--- The magic bullet!
+    // FIX 2: Use native pause() instead of cancel(). 
+    // Do NOT set isCancelledRef.current = true here, so it safely continues later.
+    window.speechSynthesis.pause();
     setIsPaused(true);
     setIsPlaying(false);
   };
 
   const handleStop = () => {
+    isCancelledRef.current = true;
+    
+    // FIX 3: Chrome/Safari bug prevention. 
+    // Canceling while paused will permanently freeze the speech API. Always resume first.
+    if (isPaused) {
+      window.speechSynthesis.resume();
+    }
+    
     window.speechSynthesis.cancel();
-    utterancesRef.current = []; 
     setIsPlaying(false);
     setIsPaused(false);
     setSeconds(0); 
-    currentIndexRef.current = 0; // Fully reset
+    currentIndexRef.current = 0; 
   };
 
   if (!isSupported) return null;
@@ -413,66 +417,66 @@ const TextToSpeech = ({ content }) => {
   return (
     <div className={`flex items-center justify-center w-full z-10 ${isPlaying || isPaused ? 'sticky' : 'static'} top-[45px]`}>
       <div 
-      className={`flex items-center justify-between p-2 pr-3 w-[300px] rounded-full border transition-all duration-300 font-sans mt-4 ${
-        isPlaying 
-          ? 'bg-blue-50/70 border-blue-200 shadow-md backdrop-blur-sm' 
-          : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 hover:shadow'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-          {isPlaying ? (
-            <div className="flex items-center gap-[3px] h-3.5">
-              <AudioLines animate={true} loop={true} />
-            </div>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
-              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
-            </svg>
-          )}
+        className={`flex items-center justify-between p-2 pr-3 w-[300px] rounded-full border transition-all duration-300 font-sans mt-4 ${
+          isPlaying 
+            ? 'bg-blue-50/70 border-blue-200 shadow-md backdrop-blur-sm' 
+            : 'bg-white border-slate-200 shadow-sm hover:border-slate-300 hover:shadow'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+            {isPlaying ? (
+              <div className="flex items-center gap-[3px] h-3.5">
+                <AudioLines animate={true} loop={true} />
+              </div>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+              </svg>
+            )}
+          </div>
+          
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-slate-900 leading-tight">
+              {isPlaying ? 'Playing Article' : isPaused ? 'Paused' : 'Listen to article'}
+            </span>
+            <span className="text-xs text-slate-500 font-medium tabular-nums">
+              {isPlaying || isPaused || seconds > 0 ? formatTime(seconds) : 'Audio version'}
+            </span>
+          </div>
         </div>
         
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-slate-900 leading-tight">
-            {isPlaying ? 'Playing Article' : isPaused ? 'Paused' : 'Listen to article'}
-          </span>
-          <span className="text-xs text-slate-500 font-medium tabular-nums">
-            {isPlaying || isPaused || seconds > 0 ? formatTime(seconds) : 'Audio version'}
-          </span>
+        <div className="flex items-center gap-2">
+          {(isPlaying || isPaused) && (
+            <button 
+              onClick={handleStop} 
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+              title="Stop"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+          )}
+
+          {!isPlaying ? (
+            <button 
+              onClick={handlePlay} 
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 hover:scale-105 transition-all"
+              title="Play"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+          ) : (
+            <button 
+              onClick={handlePause} 
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 hover:scale-105 transition-all"
+              title="Pause"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+          )}
         </div>
       </div>
-      
-      <div className="flex items-center gap-2">
-        {(isPlaying || isPaused) && (
-          <button 
-            onClick={handleStop} 
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 transition-colors"
-            title="Stop"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
-          </button>
-        )}
-
-        {!isPlaying ? (
-          <button 
-            onClick={handlePlay} 
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 hover:scale-105 transition-all"
-            title="Play"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </button>
-        ) : (
-          <button 
-            onClick={handlePause} 
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-md hover:bg-blue-700 hover:scale-105 transition-all"
-            title="Pause"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-          </button>
-        )}
-      </div>
-    </div>
     </div>
   );
 };
