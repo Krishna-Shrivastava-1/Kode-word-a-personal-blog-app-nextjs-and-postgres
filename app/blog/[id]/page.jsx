@@ -438,8 +438,7 @@ export default async function BlogPostPage({ params }) {
           </div>
         </div>
         <div className="">
-          {/* Just removed temprorary */}
-          {/* <RecommendationSection recommendationData={recommendationData} /> */}
+          <RecommendationSection recommendationData={recommendationData} />
         </div>
       </article>
     </>
