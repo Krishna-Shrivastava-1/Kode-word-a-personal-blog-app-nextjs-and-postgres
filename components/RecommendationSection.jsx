@@ -3,10 +3,9 @@ import Link from 'next/link'
 import React from 'react'
 
 const RecommendationSection = ({recommendationData}) => {
-    
   return (
    <div className="w-full max-w-7xl mx-auto px-4 py-12">
-  {recommendationData?.recommendations?.length > 0 && (
+  {recommendationData?.length > 0 && (
     <div className="flex flex-col gap-6">
       {/* Section Header */}
       <div className="flex items-center gap-4">
@@ -18,9 +17,9 @@ const RecommendationSection = ({recommendationData}) => {
 
       {/* Responsive Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {recommendationData.recommendations.map((e) => (
+        {recommendationData?.map((e,index) => (
           <Link 
-            key={e.id} 
+            key={e?.slug} 
             href={`/blog/${e.slug}`}
             className="group flex flex-col bg-white dark:bg-neutral-900 rounded-xl overflow-hidden border border-gray-100 dark:border-neutral-800 transition-all hover:shadow-lg hover:-translate-y-1"
           >

@@ -219,11 +219,65 @@ export default async function BlogPostPage({ params }) {
       ],
     },
   ];
-  const getRecommendation = await fetch(
-    `${process.env.RECOMMEND_URL}/${post.id}`,
-    { method: "GET" },
+const getRecommendation = await fetch(
+    `${process.env.RECOMMEND_URL}/${post.slug}`,
+    { 
+      method: "GET",
+      next: { revalidate: 3600 } // Cache for 1 hour
+    }
   );
+
   const recommendationData = await getRecommendation.json();
+  let finalRecommendations = [];
+
+  if (recommendationData.status === "success" && recommendationData.recommendations.length > 0) {
+    
+    // 2. Extract identifiers (Slugs or IDs) for the Postgres query
+    // We collect both to ensure we find the match even if Qdrant only has the ID
+    const identifiers = recommendationData.recommendations.map(
+      rec => rec.slug || rec.blog_id
+    );
+
+    // 3. One single query to Neon (Postgres) for UI metadata
+    // We use id::text to allow comparing UUIDs/Integers against the string array
+    const query = `
+      SELECT id, slug, thumbnailimage, subtitle 
+      FROM posts 
+      WHERE slug = ANY($1) OR id::text = ANY($1)
+    `;
+    
+    const { rows: uiMetadata } = await pool.query(query, [identifiers]);
+
+    // 4. Merge and Filter logic
+    finalRecommendations = recommendationData.recommendations
+      .map(rec => {
+        // Find the matching row in Postgres by checking all possible keys
+        const meta = uiMetadata.find(m => 
+          m.slug === rec.slug || 
+          m.id === rec.slug || 
+          m.id === rec.blog_id
+        );
+        
+        return {
+          ...rec,
+          // PRIORITY: Use the real string slug from DB to fix UUID issues
+          slug: meta ? meta.slug : rec.slug, 
+          thumbnailimage: meta ? meta.thumbnailimage : "/placeholder-image.jpg",
+          subtitle: meta ? meta.subtitle : "Explore the detailed implementation and logic...",
+          id: meta ? meta.id : rec.blog_id
+        };
+      })
+      // CRITICAL: Filter out the current post so it doesn't recommend itself
+      .filter(rec => 
+        rec.slug !== post.slug && 
+        rec.id !== post.id &&
+        rec.blog_id !== post.id
+      )
+      // Take only the top 4 after filtering
+      .slice(0, 4);
+  }
+
+
   return (
     <>
       {/* ✅ JSON-LD structured data */}
@@ -438,7 +492,7 @@ export default async function BlogPostPage({ params }) {
           </div>
         </div>
         <div className="">
-          <RecommendationSection recommendationData={recommendationData} />
+          <RecommendationSection recommendationData={finalRecommendations} />
         </div>
       </article>
     </>

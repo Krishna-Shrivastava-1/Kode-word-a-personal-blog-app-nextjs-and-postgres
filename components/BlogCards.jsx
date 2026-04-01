@@ -341,23 +341,29 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
               </Link>
 
               {/* Page Numbers */}
-              <div className="flex items-center gap-0.5">
-                {getPaginationRange().map((pageNum, index) => (
-                  <Link
-                    key={index}
-                    href={`/blog${pageNum === '...' ? '' : `?page=${pageNum}`}`}
-                    className={`flex items-center justify-center w-12 h-12 rounded-xl text-sm font-semibold transition-all shadow-sm ${
-                      pageNum === '...'
-                        ? 'text-gray-400 cursor-default'
-                        : currentPage == pageNum
-                        ? 'bg-blue-600 text-white shadow-md scale-105'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-md border border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    {pageNum}
-                  </Link>
-                ))}
-              </div>
+             {/* Page Numbers - Contained and Scrollable */}
+<div className="flex items-center gap-1.5 px-2 mx-1 max-w-[200px] xs:max-w-[260px] sm:max-w-none overflow-x-auto no-scrollbar">
+  {getPaginationRange().map((pageNum, index) => {
+    const isEllipsis = pageNum === '...';
+    const isCurrent = currentPage === pageNum;
+
+    return (
+      <Link
+        key={index}
+        href={isEllipsis ? "#" : `/blog?page=${pageNum}`}
+        className={`flex items-center justify-center shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+          isEllipsis
+            ? "text-gray-400 cursor-default pointer-events-none"
+            : isCurrent
+            ? "bg-blue-600 text-white shadow-lg shadow-blue-100 z-10 scale-105"
+            : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-100"
+        }`}
+      >
+        {pageNum}
+      </Link>
+    );
+  })}
+</div>
 
               {/* Next */}
               <Link
