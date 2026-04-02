@@ -1,4 +1,5 @@
 import pool from '@/lib/db'
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 
 
@@ -31,12 +32,15 @@ const resptoDele = await fetch(
     body:JSON.stringify({blog_id:slug})
   })
 const data = await resp.json()
-console.log(data)
+// console.log(data)
 // if(data?.chunks_stored ==0){
 // return NextResponse.json({
 //   message:`Error in creating embedding of this edited blog `
 // })
 // }
+  // cache validation and invalidation
+        revalidatePath(`/blog/${id}`)
+        revalidatePath(`/blog/${slug}`)
     return NextResponse.json({
       success: true,
       message: 'Post updated successfully',

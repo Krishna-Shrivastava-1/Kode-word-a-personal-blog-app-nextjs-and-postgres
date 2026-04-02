@@ -220,6 +220,7 @@ import pool from '@/lib/db'
 import { Authorized } from '@/controllers/authControl'
 import { del } from '@vercel/blob'
 import { v2 as cloudinary } from 'cloudinary'
+import { revalidatePath } from 'next/cache'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -272,6 +273,11 @@ export async function DELETE(req, { params }) {
     }
 
     const post = postResult.rows[0]
+
+
+     // cache validation and invalidation
+        revalidatePath(`/blog/${id}`)
+        revalidatePath(`/blog/${post?.slug}`)
 
     // ── Collect all storage URLs ───────────────────────────────────────────────
     const assetUrls = []

@@ -13,6 +13,8 @@ import ShareButton from "@/components/ShareButton";
 import Link from "next/link";
 import RecommendationSection from "@/components/RecommendationSection";
 import TextToSpeech from "@/components/TextToSpeech";
+import { unstable_cache } from "next/cache";
+import { getCachedPostContent, getLivePostData } from "@/lib/cache";
 
 // ✅ 1. SEO METADATA: Optimized for "Title Search" and Indexing
 export async function generateMetadata({ params }) {
@@ -127,27 +129,64 @@ export default async function BlogPostPage({ params }) {
   const { id } = await params;
   const currUser = await Authorized();
 
-  const result = await pool.query(
-    `
-    SELECT 
-      p.*, 
-      u.name,
-      COALESCE((SELECT COUNT(*) FROM post_likes WHERE post_id = p.id), 0) AS like_count,
-      COALESCE((SELECT COUNT(*) FROM bookmark_user WHERE post_id = p.id), 0) AS bookmark_count,
-      EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) AS liked_by_current_user,
-      EXISTS (SELECT 1 FROM bookmark_user WHERE post_id = p.id AND user_id = $2) AS bookmarked_by_current_user
-    FROM posts p
-    JOIN users u ON p.user_id = u.id
-    WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE
-    `,
-    [id, currUser?.user?.id],
-  );
+  // const result = await pool.query(
+  //   `
+  //   SELECT 
+  //     p.*, 
+  //     u.name,
+  //     COALESCE((SELECT COUNT(*) FROM post_likes WHERE post_id = p.id), 0) AS like_count,
+  //     COALESCE((SELECT COUNT(*) FROM bookmark_user WHERE post_id = p.id), 0) AS bookmark_count,
+  //     EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) AS liked_by_current_user,
+  //     EXISTS (SELECT 1 FROM bookmark_user WHERE post_id = p.id AND user_id = $2) AS bookmarked_by_current_user
+  //   FROM posts p
+  //   JOIN users u ON p.user_id = u.id
+  //   WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE
+  //   `,
+  //   [id, currUser?.user?.id],
+  // );
+// const getCachedPost = unstable_cache(
+//   async (id, userId) => {
+//     console.log(`--- DATABASE HIT FOR POST: ${id} ---`); // Log to see when cache misses
+//     const result = await pool.query(
+//       `
+//       SELECT 
+//         p.*, u.name,
+//         COALESCE((SELECT COUNT(*) FROM post_likes WHERE post_id = p.id), 0) AS like_count,
+//         COALESCE((SELECT COUNT(*) FROM bookmark_user WHERE post_id = p.id), 0) AS bookmark_count,
+//         EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $2) AS liked_by_current_user,
+//         EXISTS (SELECT 1 FROM bookmark_user WHERE post_id = p.id AND user_id = $2) AS bookmarked_by_current_user
+//       FROM posts p
+//       JOIN users u ON p.user_id = u.id
+//       WHERE (p.id::text = $1 OR p.slug = $1) AND p.public = TRUE
+//       `,
+//       [id, userId],
+//     );
+//     return result.rows[0];
+//   },
+//   ['blog-post-detail'], // Unique key for this cache type
+//   { 
+//     tags: (id) => [`post-${id}`], // This allows us to revalidate post-1, post-2, etc.
+//     revalidate: 3600 // Fallback: Refresh every hour even if we forget to manual-bust
+//   }
+// );
 
-  const post = result.rows[0];
+  const postContent = await getCachedPostContent(id);
 
+const liveData = await getLivePostData(postContent?.id, currUser?.user?.id);
+
+  // Step C: Combine them
+  const post = {
+    ...postContent,
+    like_count: liveData?.like_count,
+    bookmark_count: liveData?.bookmark_count,
+    liked_by_current_user: liveData?.liked_by_me,
+    bookmarked_by_current_user: liveData?.bookmarked_by_me,
+    views:liveData?.views
+  };
   if (!post) {
     notFound();
   }
+
 
   const formattedDate = new Date(post.created_at).toLocaleDateString("en-US", {
     year: "numeric",
@@ -308,8 +347,8 @@ const getRecommendation = await fetch(
           </div>
           <div className="relative w-full min-h-[260px] sm:min-h-[350px] md:min-h-[450px] lg:min-h-[550px] max-h-[75vh]">
             <Image
-              src={post.thumbnailimage}
-              alt={post.title}
+              src={post?.thumbnailimage}
+              alt={post?.title}
               fill
               priority
               className="object-contain object-center "
@@ -405,8 +444,8 @@ const getRecommendation = await fetch(
           </div>
           <div className="max-w-4xl px-4 mx-auto ">
             <div className="flex justify-start items-center  flex-wrap">
-              {post.tag.split(",").length > 1 ? (
-                post.tag.split(",")?.map((e, ind) => (
+              {post?.tag?.split(",").length > 1 ? (
+                post?.tag?.split(",")?.map((e, ind) => (
                   <Link
                     key={ind}
                     href={{
@@ -424,13 +463,13 @@ const getRecommendation = await fetch(
                 <Link
                   href={{
                     pathname: `/blog/${post.slug}`, // your current page
-                    query: { tag: post.tag.trim() },
+                    query: { tag: post?.tag?.trim() },
                   }}
                   className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 mx-2 rounded-full text-xs  bg-blue-600/50 border font-bold border-blue-600 text-blue-700 mb-3 sm:mb-4 cursor-pointer select-none hover:bg-blue-700 hover:text-white transition-colors"
                   scroll={false} // prevents scroll jump
                 >
                   <Tag className="w-3 h-3" />
-                  {post.tag.trim()}
+                  {post?.tag?.trim()}
                 </Link>
               )}
             </div>

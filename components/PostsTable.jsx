@@ -36,18 +36,18 @@ import { useRouter } from "next/navigation";
 const PostsTable = ({ postData, onUpdate }) => {
   const [updatingId, setUpdatingId] = useState(null);
   const router = useRouter();
-  const handleChangeVisibility = async (postId, isPublic) => {
+  const handleChangeVisibility = async (postId, isPublic,slug) => {
     try {
       setUpdatingId(postId);
 
       const res = await fetch("/api/post/updatevisibility", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postid: postId, postvisiblity: isPublic }),
+        body: JSON.stringify({ postid: postId, postvisiblity: isPublic,postSlug:slug }),
       });
 
       const data = await res.json();
-      console.log(data);
+     
       // 🔥 UPDATE UI IN PARENT
       onUpdate(postId, isPublic);
       if (data.success) {
@@ -65,6 +65,7 @@ const PostsTable = ({ postData, onUpdate }) => {
       setUpdatingId(null);
     }
   };
+
   const handleDelete = async (postId) => {
     try {
       const { data } = await axios.delete(`/api/post/deletepost/${postId}`);
@@ -138,13 +139,13 @@ const PostsTable = ({ postData, onUpdate }) => {
 
                   <DropdownMenuContent align="start" className="w-40">
                     <DropdownMenuItem
-                      onClick={() => handleChangeVisibility(e.id, true)}
+                      onClick={() => handleChangeVisibility(e.id, true,e.slug)}
                     >
                       Set as Public
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                      onClick={() => handleChangeVisibility(e.id, false)}
+                      onClick={() => handleChangeVisibility(e.id, false,e.slug)}
                     >
                       Set as Private
                     </DropdownMenuItem>

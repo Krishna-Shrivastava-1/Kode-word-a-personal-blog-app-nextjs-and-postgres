@@ -10,11 +10,11 @@
 //   // Fetch posts directly server-side
 //   const result = await pool.query(
 //     `
-//   SELECT 
-//     p.*, 
+//   SELECT
+//     p.*,
 //     u.name,
 //     EXISTS (
-//       SELECT 1 
+//       SELECT 1
 //       FROM bookmark_user bu
 //       WHERE bu.post_id = p.id AND bu.user_id = $1
 //     ) AS bookmarked_by_current_user
@@ -152,24 +152,31 @@
 //   );
 // }
 
-
-
-
-
-
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, User, Tag, Bookmark, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  User,
+  Tag,
+  Bookmark,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import pool from "@/lib/db";
 import { Authorized } from "@/controllers/authControl";
 
-export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts = 0 }) {
-  const currUser = await Authorized()
-  const currentPage = Math.max(1, Number(page))
-  
+export default async function BlogCards({
+  page = 1,
+  postsPerPage = 9,
+  totalPosts = 0,
+}) {
+  const currUser = await Authorized();
+  const currentPage = Math.max(1, Number(page));
+
   // ✅ Server-side pagination query
-  const offset = (currentPage - 1) * postsPerPage
-  
+  const offset = (currentPage - 1) * postsPerPage;
+
   const result = await pool.query(
     `
     SELECT 
@@ -186,45 +193,49 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
     ORDER BY p.created_at DESC
     LIMIT $2 OFFSET $3
   `,
-    [currUser?.user?.id, postsPerPage, offset]
-  )
+    [currUser?.user?.id, postsPerPage, offset],
+  );
 
-  const posts = result.rows
-  const totalPages = Math.ceil(totalPosts / postsPerPage)
+  const posts = result.rows;
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
 
   const formattedDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
+    });
+  };
 
   const getPaginationRange = () => {
-    const delta = 2
-    const range = []
-    const rangeWithDots = []
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
 
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-      range.push(i)
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i);
     }
 
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, '...')
+      rangeWithDots.push(1, "...");
     } else {
-      rangeWithDots.push(1)
+      rangeWithDots.push(1);
     }
 
-    rangeWithDots.push(...range)
+    rangeWithDots.push(...range);
 
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push('...', totalPages)
+      rangeWithDots.push("...", totalPages);
     } else {
-      rangeWithDots.push(totalPages)
+      rangeWithDots.push(totalPages);
     }
 
-    return rangeWithDots
-  }
+    return rangeWithDots;
+  };
 
   return (
     <div className="max-w-7xl mx-auto @container">
@@ -234,7 +245,7 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
           Latest Articles
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl">
-           Discover our latest posts and insights from the Kode$word journey
+          Discover our latest posts and insights from the Kode$word journey
         </p>
       </div>
 
@@ -257,9 +268,17 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
                 <div className="absolute top-4 right-4">
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/95 backdrop-blur-sm shadow-lg border">
                     {post?.bookmarked_by_current_user ? (
-                      <Bookmark fill="#028cdb" stroke="#028cdb" className="w-3.5 h-3.5" />
+                      <Bookmark
+                        fill="#028cdb"
+                        stroke="#028cdb"
+                        className="w-3.5 h-3.5"
+                      />
                     ) : (
-                      <Bookmark fill="none" stroke="#6b7280" className="w-3.5 h-3.5" />
+                      <Bookmark
+                        fill="none"
+                        stroke="#6b7280"
+                        className="w-3.5 h-3.5"
+                      />
                     )}
                     <span className="hidden sm:inline">Bookmark</span>
                   </span>
@@ -291,8 +310,8 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
                 {/* Tags */}
                 <div className="mb-6">
                   {post.tag?.split(",").map((tag, ind) => {
-                    const cleanTag = tag?.trim()
-                    if (!cleanTag) return null
+                    const cleanTag = tag?.trim();
+                    if (!cleanTag) return null;
                     return (
                       <span
                         key={ind}
@@ -301,7 +320,7 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
                         <Tag className="w-3 h-3" />
                         {cleanTag}
                       </span>
-                    )
+                    );
                   })}
                 </div>
 
@@ -326,14 +345,17 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
             </div>
 
             {/* Pagination Controls */}
-            <nav aria-label="Blog pagination" className="flex items-center flex-wrap gap-1">
+            <nav
+              aria-label="Blog pagination"
+              className="flex items-center flex-wrap gap-1"
+            >
               {/* Previous */}
               <Link
-                href={`/blog${currentPage > 1 ? `?page=${currentPage - 1}` : ''}`}
+                href={`/blog${currentPage > 1 ? `?page=${currentPage - 1}` : ""}`}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   currentPage === 1
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-blue-600 hover:bg-blue-50 hover:shadow-md shadow-sm bg-white border border-blue-200'
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-blue-600 hover:bg-blue-50 hover:shadow-md shadow-sm bg-white border border-blue-200"
                 }`}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -341,37 +363,41 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
               </Link>
 
               {/* Page Numbers */}
-             {/* Page Numbers - Contained and Scrollable */}
-<div className="flex items-center gap-1.5 px-2 mx-1 max-w-[200px] xs:max-w-[260px] sm:max-w-none overflow-x-auto no-scrollbar">
-  {getPaginationRange().map((pageNum, index) => {
-    const isEllipsis = pageNum === '...';
-    const isCurrent = currentPage === pageNum;
+              {/* Page Numbers - Contained and Scrollable */}
+              <div className="flex items-center gap-1.5 px-2 mx-1 max-w-[200px] xs:max-w-[260px] sm:max-w-none overflow-x-auto no-scrollbar">
+                {getPaginationRange().map((pageNum, index) => {
+                  const isEllipsis = pageNum === "...";
+                  const isCurrent = currentPage === pageNum;
 
-    return (
-      <Link
-        key={index}
-        href={isEllipsis ? "#" : `/blog?page=${pageNum}`}
-        className={`flex items-center justify-center shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl text-xs sm:text-sm font-bold transition-all ${
-          isEllipsis
-            ? "text-gray-400 cursor-default pointer-events-none"
-            : isCurrent
-            ? "bg-blue-600 text-white shadow-lg shadow-blue-100 z-10 scale-105"
-            : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-100"
-        }`}
-      >
-        {pageNum}
-      </Link>
-    );
-  })}
-</div>
+                  return (
+                    <Link
+                      key={index}
+                      href={isEllipsis ? "#" : `/blog?page=${pageNum}`}
+                      className={`flex items-center justify-center shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                        isEllipsis
+                          ? "text-gray-400 cursor-default pointer-events-none"
+                          : isCurrent
+                            ? "bg-blue-600 text-white shadow-lg shadow-blue-100 z-10 scale-105"
+                            : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-100"
+                      }`}
+                    >
+                      {pageNum}
+                    </Link>
+                  );
+                })}
+              </div>
 
               {/* Next */}
               <Link
-                href={currentPage < totalPages ? `/blog?page=${currentPage + 1}` : '/blog'}
+                href={
+                  currentPage < totalPages
+                    ? `/blog?page=${currentPage + 1}`
+                    : "/blog"
+                }
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   currentPage === totalPages
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-blue-600 hover:bg-blue-50 hover:shadow-md shadow-sm bg-white border border-blue-200'
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-blue-600 hover:bg-blue-50 hover:shadow-md shadow-sm bg-white border border-blue-200"
                 }`}
               >
                 Next
@@ -385,12 +411,14 @@ export default async function BlogCards({ page = 1, postsPerPage = 9, totalPosts
       {/* Empty State */}
       {!posts || posts.length === 0 ? (
         <div className="text-center py-24">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">No posts yet</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            No posts yet
+          </h2>
           <p className="text-gray-500 text-lg max-w-md mx-auto">
             Stay tuned! New articles will appear here soon.
           </p>
         </div>
       ) : null}
     </div>
-  )
+  );
 }

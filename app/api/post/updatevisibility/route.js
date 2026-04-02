@@ -1,9 +1,10 @@
 import { updatePostVisibility } from "@/models/posts";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function PATCH(req,res) {
     try {
-        const {postid,postvisiblity} = await req.json()
+        const {postid,postvisiblity,postSlug} = await req.json()
         const updateVisibility = await updatePostVisibility(postid,postvisiblity)
         if(!updateVisibility){
             return NextResponse.json({
@@ -11,6 +12,9 @@ export async function PATCH(req,res) {
                 succes:false
             })
         }
+        // cache validation and invalidation
+        revalidatePath(`/blog/${postid}`)
+        revalidatePath(`/blog/${postSlug}`)
         return NextResponse.json({
             message:'Updated Visibility',
             success:true

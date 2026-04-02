@@ -12,7 +12,7 @@ const page = async() => {
 
   const result = await pool.query(`
   SELECT 
-    p.*,           -- All post columns
+    p.title,p.subtitle,p.thumbnailimage,p.id,p.slug,p.tag,p.created_At,           -- All post columns
     u.name as author_name
   FROM bookmark_user bu
   JOIN posts p ON bu.post_id = p.id
@@ -30,6 +30,7 @@ const posts=result?.rows
       day: 'numeric',
     })
   }
+  
   return (
     <div>
       <Navbar />
@@ -45,7 +46,7 @@ const posts=result?.rows
         {/* Responsive Grid: 1 col mobile, 2 col tablet, 3 col desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {posts?.map((post) => (
-            <Link href={`/blog/${post.id}`} key={post.id}>
+            <Link href={`/blog/${post.slug}`} key={post.id}>
               <div className="group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col">
                 {/* Thumbnail Image */}
                 <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-200">
@@ -88,7 +89,7 @@ const posts=result?.rows
                   <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-500 mb-3">
                     <div className="flex items-center gap-1.5">
                       <User className="w-4 h-4" />
-                      <span>{post.name}</span>
+                      <span>{post.author_name}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-4 h-4" />
