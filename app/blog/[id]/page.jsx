@@ -15,6 +15,7 @@ import RecommendationSection from "@/components/RecommendationSection";
 import TextToSpeech from "@/components/TextToSpeech";
 import { unstable_cache } from "next/cache";
 import { getCachedPostContent, getLivePostData } from "@/lib/cache";
+import { PrivatePostFallback } from "@/components/PrivatePostFallback";
 
 // ✅ 1. SEO METADATA: Optimized for "Title Search" and Indexing
 export async function generateMetadata({ params }) {
@@ -183,6 +184,10 @@ const liveData = await getLivePostData(postContent?.id, currUser?.user?.id);
     bookmarked_by_current_user: liveData?.bookmarked_by_me,
     views:liveData?.views
   };
+
+ if (!postContent) {
+    return <PrivatePostFallback />;
+  }
   if (!post) {
     notFound();
   }
