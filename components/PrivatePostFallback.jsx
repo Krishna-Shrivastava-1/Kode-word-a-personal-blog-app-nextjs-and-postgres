@@ -12,7 +12,7 @@ export const  PrivatePostFallback=()=>{
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-gray-900">This Post is not available</h1>
           <p className="text-gray-600">
-            There are so many other post waiting for you to read or please comaback after sometime.
+            There are so many other post waiting for you to read or please comeback after sometime.
           </p>
         </div>
 
