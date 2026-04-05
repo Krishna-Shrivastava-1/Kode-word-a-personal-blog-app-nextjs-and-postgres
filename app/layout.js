@@ -28,8 +28,8 @@ export const metadata = {
     // default: 'Kode$word | Krishna Shrivastava - Full-Stack Developer Portfolio & Blog',
     template: '%s | Kode$word'
   },
-  description: 'In-depth Java LeetCode solutions and full-stack engineering insights by Krishna Shrivastava. Focus on dry runs, complexity analysis, and scalable systems.',
-  // description: 'Master LeetCode with Kode$word. Expert Java solutions, step-by-step dry runs, and Full-Stack projects (Spring Boot, Next.js) by Krishna Shrivastava.',
+
+  description: 'Master LeetCode with Kode$word. Expert Java solutions, step-by-step dry runs, and Full-Stack projects (Spring Boot, Next.js) by Krishna Shrivastava.',
   // description: 'The coding journey of Krishna Shrivastava. Explore full-stack projects (Spring Boot, Next.js), LeetCode solutions, and insights into building scalable applications like krido, kodesword and more.',
   
   
@@ -94,7 +94,7 @@ export const metadata = {
     locale: 'en_US',
     url: 'https://kodesword.vercel.app',
     title: 'Krishna Shrivastava - Developer Portfolio & Blog',
-    description: 'Explore my projects, LeetCode solutions, and full-stack development journey.',
+    description: 'In-depth Java LeetCode solutions and full-stack engineering insights by Krishna Shrivastava. Focus on dry runs, complexity analysis, and scalable systems.',
     siteName: 'KodeSword',
     images: [
       {
