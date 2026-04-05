@@ -51,12 +51,15 @@ export async function GridBackgroundDemo() {
   <div className="relative mt-8 z-20 mx-auto w-full max-w-4xl px-4 sm:px-6 md:px-8 text-center">
     {/* Main Heading - MOBILE FIRST */}
     <h1 className="bg-gradient-to-b from-neutral-900 via-neutral-700 to-neutral-500 bg-clip-text py-2 text-3xl font-black leading-tight text-transparent xs:text-xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl break-words hyphens-auto overflow-wrap-break-word">
-      From Small Steps to Big Impact
+      {/* From Small Steps to Big Impact */}
+      The Art of  Technical Problem Solving
     </h1>
     
     {/* Subheading - MOBILE FIRST */}
     <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 xs:text-base sm:text-lg md:text-xl break-words hyphens-auto">
-     Documenting my journey in software development—sharing insights, lessons, and ideas through carefully crafted posts that reflect how I think, build, and grow.
+     Deep-dive into high-quality Java LeetCode solutions featuring step-by-step dry runs, 
+  optimal time and space complexity analysis, and insights for building scalable full-stack applications.
+     {/* Documenting my journey in software development—sharing insights, lessons, and ideas through carefully crafted posts that reflect how I think, build, and grow. */}
     </p>
     
     {/* CTA Buttons - FULL RESPONSIVE */}
