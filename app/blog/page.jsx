@@ -181,7 +181,7 @@ export async function generateMetadata({ searchParams }) {
   }
 
   return {
-    title: page > 1 ? `Blog Page ${page} | Kode$word` : 'Blog | Kode$word',
+    title: page > 1 ? `Blog Page ${page} | Kode$word` : 'Blog ',  // removed this after Blog to prevent duplication | Kode$word
     description: page > 1 
       ? `Page ${page} - Krishna Shrivastava's coding journey`
       : 'Krishna Shrivastava - LeetCode, Spring Boot, Next.js tutorials',
