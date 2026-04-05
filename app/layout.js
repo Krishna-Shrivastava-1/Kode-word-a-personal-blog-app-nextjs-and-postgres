@@ -207,7 +207,7 @@ export default function RootLayout({ children }) {
           </ClientSidebarWrapper>
           <Analytics />
           {/* Google analystics new ID here */}
-         <GoogleAnalytics gaId="G-RPXZV2CTEK" />
+         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
           <Toaster richColors />
         </ContextProvider>
       </body>
