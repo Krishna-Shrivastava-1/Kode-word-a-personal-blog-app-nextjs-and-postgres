@@ -41,7 +41,7 @@ export async function generateMetadata({ params }) {
 
     if (result.rows.length === 0) {
       return {
-        title: "Post Not Found | Kode$word",
+        title: "Post Not Found | KodeSword",
         description: "The blog post you are looking for could not be found.",
       };
     }
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }) {
 
       authors: [{ name: post.author_name || "Krishna Shrivastava" }],
       creator: post.author_name || "Krishna Shrivastava",
-      publisher: "Kode$word",
+      publisher: "KodeSword",
 
       openGraph: {
         title: post.title,
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }) {
         authors: [post.author_name || "Krishna Shrivastava"],
         tags: post.tag ? post.tag.split(",") : [],
         url: `https://kodesword.vercel.app/blog/${post.slug}`,
-        siteName: "Kode$word",
+        siteName: "KodeSword",
         images: post.thumbnailimage
           ? [
               {
@@ -120,7 +120,7 @@ export async function generateMetadata({ params }) {
   } catch (error) {
     console.error("Error generating metadata:", error);
     return {
-      title: "Error | Kode$word",
+      title: "Error | KodeSword",
       description: "An error occurred while loading this blog post.",
     };
   }

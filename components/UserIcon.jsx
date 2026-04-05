@@ -79,14 +79,14 @@ const handleLogout = async () => {
       <Link href={'/contact'}>
         <div className='flex items-center justify-center space-x-2 select-none cursor-pointer ml-2'>
           <Button variant='outline'>
-            <h1 className='font-medium'>Contact</h1>
+            <span className='font-medium'>Contact</span>
           </Button>
         </div>
       </Link>
       <Link href={'/support'}>
         <div className='flex items-center justify-center space-x-2 select-none cursor-pointer ml-2'>
           <Button variant='outline'>
-            <h1 className='font-medium'>Support</h1>
+            <span className='font-medium'>Support</span>
           </Button>
         </div>
       </Link>
@@ -118,14 +118,14 @@ const handleLogout = async () => {
     <Link href={'/contact'}>
                  <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
                      <Button variant='outline' >
-                     <h1 className='font-medium '>Contact</h1>
+                     <span className='font-medium '>Contact</span>
                      </Button>
                  </div>
                 </Link>
     <Link href={'/support'}>
                  <div className='flex items-center justify-center space-x-2 select-none cursor-pointer  ml-2'>
                      <Button variant='outline' className='cursor-pointer'>
-                     <h1 className='font-medium '>Support</h1>
+                     <span className='font-medium '>Support</span>
                      </Button>
                  </div>
                 </Link>

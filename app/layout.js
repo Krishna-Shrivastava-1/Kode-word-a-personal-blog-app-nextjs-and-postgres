@@ -8,7 +8,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/chatSideBar";
 import { cookies } from "next/headers";
 import ClientSidebarWrapper from "@/components/ClientSidebarWrapper";
-
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,7 +24,8 @@ export const metadata = {
   metadataBase: new URL('https://kodesword.vercel.app'),
   
   title: {
-    default: 'Kode$word | Krishna Shrivastava - Full-Stack Developer Portfolio & Blog',
+    default: 'Kode$word | Krishna - Full-Stack Developer & Blog',
+    // default: 'Kode$word | Krishna Shrivastava - Full-Stack Developer Portfolio & Blog',
     template: '%s | Kode$word'
   },
   
@@ -34,11 +35,17 @@ export const metadata = {
     // Personal Brand & Core Focus
     'Krishna Shrivastava',
     'Kode$word',
+    'KodeSword',
+    'Krishna',
+    'LeetCode Java Solutions',
+    'GFG Java Solutions',
     'Kodesword',
     'Developer Portfolio',
     'Coding Journey',
     'Full-Stack Developer India',
-    
+    'Java Algorithm Explanations',
+    'Coding Blog',
+    'Software Engineering Journey',
     // Specific Projects (Crucial for "Not just tutorials")
     'KriCal App',
     'Spring Boot Backend Project',
@@ -86,13 +93,13 @@ export const metadata = {
     url: 'https://kodesword.vercel.app',
     title: 'Krishna Shrivastava - Developer Portfolio & Blog',
     description: 'Explore my projects, LeetCode solutions, and full-stack development journey.',
-    siteName: 'Kode$word',
+    siteName: 'KodeSword',
     images: [
       {
         url: '/favicon.ico', // Make sure you have an image file in your public folder!
         width: 1200,
         height: 630,
-        alt: 'Kode$word - Krishna Shrivastava Portfolio',
+        alt: 'KodeSword - Krishna Shrivastava Portfolio',
       },
     ],
   },
@@ -124,7 +131,8 @@ export default function RootLayout({ children }) {
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Kode$word",
+      "name": "KodeSword",
+      "alternateName": "Kode$word",
       "url": "https://kodesword.vercel.app",
       "potentialAction": {
         "@type": "SearchAction",
@@ -146,7 +154,7 @@ export default function RootLayout({ children }) {
         "@type": "Organization",
         "name": "Self-Employed"
       },
-      "description": "Full-Stack Developer building projects like Krido and sharing knowledge on Kode$word."
+      "description": "Full-Stack Developer building projects like BrilliCode and sharing knowledge on Kode$word."
     }
   ];
 
@@ -198,6 +206,8 @@ export default function RootLayout({ children }) {
             {/* <ChatWidget /> */}
           </ClientSidebarWrapper>
           <Analytics />
+          {/* Google analystics new ID here */}
+         <GoogleAnalytics gaId="G-RPXZV2CTEK" />
           <Toaster richColors />
         </ContextProvider>
       </body>

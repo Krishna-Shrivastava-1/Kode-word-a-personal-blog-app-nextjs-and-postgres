@@ -40,8 +40,8 @@ const Navbar = () => {
     <SheetHeader>
       <SheetTitle> <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
-                <Image src={logo} alt='Logo' width={75} height={70} />
-                <h1 className='font-semibold text-xl '>Kode$word</h1>
+                <Image priority src={logo} alt='Logo' width={75} height={70} />
+                <span className='font-semibold text-xl '>Kode$word</span>
             </div>
            </Link></SheetTitle>
    
@@ -49,14 +49,14 @@ const Navbar = () => {
    <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
 
-                <h1 className='font-semibold text-xl '>Home</h1>
+                <span className='font-semibold text-xl '>Home</span>
             </div>
            </Link>
              <FieldSeparator />
             <Link href={'/bookmark'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
 
-                <h1 className='font-semibold text-xl '>Bookmark</h1>
+                <span className='font-semibold text-xl '>Bookmark</span>
             </div>
            </Link>
            <FieldSeparator />
@@ -64,14 +64,14 @@ const Navbar = () => {
    <Link href={'/contact'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
 
-                <h1 className='font-semibold text-xl '>Contact</h1>
+                <span className='font-semibold text-xl '>Contact</span>
             </div>
            </Link>
            <FieldSeparator />
               <Link href={'/support'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
 
-                <h1 className='font-semibold text-xl '>Support</h1>
+                <span className='font-semibold text-xl '>Support</span>
             </div>
            </Link>
          
@@ -99,8 +99,8 @@ const Navbar = () => {
             </div>
            <Link href={'/'}>
             <div className='flex items-center justify-center space-x-2 select-none cursor-pointer'>
-                <Image src={logo} alt='Logo' width={40} height={10} />
-                <h1 className='font-semibold text-xl '>Kode$word</h1>
+                <Image priority src={logo} alt='Logo' width={40} height={10} />
+                <span className='font-semibold text-xl '>Kode$word</span>
             </div>
            </Link>
            <div className='hidden sm:block'>
