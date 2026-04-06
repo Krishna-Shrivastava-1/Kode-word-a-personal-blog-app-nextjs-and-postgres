@@ -279,6 +279,14 @@ const SearchBox = ({ showText = true }) => {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    const catchTag = (e) => {
+      setQuery(e.detail); // This puts the tag into your search input
+    };
+
+    window.addEventListener("setSearchTag", catchTag);
+    return () => window.removeEventListener("setSearchTag", catchTag);
+  }, []);
   // 1. SYNC STATE WITH HASH
   // This listener handles the "Back" button and manual URL entry
   useEffect(() => {

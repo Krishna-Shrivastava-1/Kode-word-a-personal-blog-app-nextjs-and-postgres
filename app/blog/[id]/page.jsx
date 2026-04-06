@@ -16,6 +16,7 @@ import TextToSpeech from "@/components/TextToSpeech";
 import { unstable_cache } from "next/cache";
 import { getCachedPostContent, getLivePostData } from "@/lib/cache";
 import { PrivatePostFallback } from "@/components/PrivatePostFallback";
+import BlogTag from "@/components/BlogTag";
 
 // ✅ 1. SEO METADATA: Optimized for "Title Search" and Indexing
 export async function generateMetadata({ params }) {
@@ -447,7 +448,16 @@ const getRecommendation = await fetch(
               </div>
             </div>
           </div>
-          <div className="max-w-4xl px-4 mx-auto ">
+        <div className="max-w-4xl px-4 mx-auto ">
+  <div className="flex justify-start items-center flex-wrap">
+    {post?.tag?.split(",").map((e, ind) => (<BlogTag
+        key={ind} 
+        tag={e.trim()} 
+        slug={post.slug} 
+      />))}
+  </div>
+</div>
+          {/* <div className="max-w-4xl px-4 mx-auto ">
             <div className="flex justify-start items-center  flex-wrap">
               {post?.tag?.split(",").length > 1 ? (
                 post?.tag?.split(",")?.map((e, ind) => (
@@ -478,7 +488,7 @@ const getRecommendation = await fetch(
                 </Link>
               )}
             </div>
-          </div>
+          </div> */}
           <div className="max-w-4xl px-4 mx-auto  ">
             <div className="flex justify-center items-center mb-4 mt-2">
               <div className=" mx-3">
