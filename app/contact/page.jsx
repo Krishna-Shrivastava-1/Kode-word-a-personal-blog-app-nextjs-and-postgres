@@ -1,5 +1,6 @@
 'use client'
 import Navbar from '@/components/Navbar'
+import { RecaptchaBranding } from '@/components/RecaptchaBranding'
 import WorldMap from '@/components/ui/world-map'
 
 import { 
@@ -617,6 +618,7 @@ export default function ContactPage() {
                 )}
               </form>
             )}
+            <RecaptchaBranding />
           </div>
           </div>
         </div>

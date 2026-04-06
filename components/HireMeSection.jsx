@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Mail, User, MessageSquare, Send, Briefcase, CheckCircle } from 'lucide-react'
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
+import { RecaptchaBranding } from './RecaptchaBranding'
 
 export default function HireMeSection() {
   const [formData, setFormData] = useState({
@@ -218,6 +219,7 @@ const { executeRecaptcha } = useGoogleReCaptcha()
                 )}
               </form>
             )}
+            <RecaptchaBranding />
           </div>
         </div>
       </div>
