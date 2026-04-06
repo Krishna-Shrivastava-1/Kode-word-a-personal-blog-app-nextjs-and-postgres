@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/chatSideBar";
 import { cookies } from "next/headers";
 import ClientSidebarWrapper from "@/components/ClientSidebarWrapper";
 import { GoogleAnalytics } from '@next/third-parties/google';
+import ReCaptchaProvider from "./ReCaptchaProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -201,7 +202,7 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        
+        <ReCaptchaProvider>
         <ContextProvider>
           <ClientSidebarWrapper>
             {children}
@@ -212,6 +213,7 @@ export default function RootLayout({ children }) {
          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
           <Toaster richColors />
         </ContextProvider>
+        </ReCaptchaProvider>
       </body>
     </html>
   )

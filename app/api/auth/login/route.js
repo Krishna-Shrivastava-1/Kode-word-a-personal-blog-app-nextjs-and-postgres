@@ -5,8 +5,29 @@ import jwt from 'jsonwebtoken'
 import { cookies } from "next/headers";
 export async function POST(req) {
     try {
-            const {email,password} = await req.json()
-    
+            const {email,password,recaptchaToken } = await req.json()
+      // 🛑 1. If a Python script calls this API, they won't have a token. Block them.
+    if (!recaptchaToken) {
+      return NextResponse.json(
+        { error: "Security check failed. Automated bots are not allowed." },
+        { status: 400 }
+      )
+    }
+      // 🛑 2. Verify the token with Google
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
+
+    const recaptchaRes = await fetch(verifyUrl, { method: "POST" });
+    const recaptchaData = await recaptchaRes.json();
+
+    // 🛑 3. If Google says the score is too low, it's a bot. Block them.
+    if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      console.warn("Bot login attempt blocked for email:", email);
+      return NextResponse.json(
+        { error: "Bot detected. Request blocked." }, 
+        { status: 403 }
+      );
+    }
             const loginUser =  await getUserbyEmail(email)
           
             if(!loginUser){

@@ -15,6 +15,7 @@ import axios from "axios"
 import { useAuth } from "./ContextAPI"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 export function SignupForm({ className, ...props }) {
   const [name, setname] = useState('')
@@ -22,14 +23,14 @@ export function SignupForm({ className, ...props }) {
   const [password, setpassword] = useState('')
   const [passwordConfirm, setpasswordConfirm] = useState('')
   const [loading, setLoading] = useState(false)  // ✅ Added loading state
-  
+    const { executeRecaptcha } = useGoogleReCaptcha()
   const router = useRouter()
   const { setregistrationEmail } = useAuth()
 
   const handleSignUp = async (e) => {
     e.preventDefault()
-    
-    // Validation
+
+     // Validation
     if (password !== passwordConfirm) {
       return toast.warning("Passwords do not match.")
     }
@@ -38,14 +39,24 @@ export function SignupForm({ className, ...props }) {
       return toast.warning("Password must be at least 8 characters long.")
     }
 
+
+    // ✅ 3. Check if reCAPTCHA is ready
+    if (!executeRecaptcha) {
+toast.warning("Security check loading, please wait...")
+      return
+    }
+   
+
     setLoading(true)
 
     try {
+      const token = await executeRecaptcha("signup_submit")
       // ✅ FIXED: Destructure data from axios response
       const { data } = await axios.post('/api/auth/register', {
         name,
         email,
-        password
+        password,
+         recaptchaToken: token
       })
 
       // ✅ FIXED: Check data.success (not resp.success)
@@ -61,11 +72,19 @@ export function SignupForm({ className, ...props }) {
         // ✅ Show error message from backend
         toast.error(data.message || 'Registration failed')
       }
-    } catch (error) {
+    } catch (err) {
       // ✅ Better error handling
-      const errorMsg = error.response?.data?.message || "Server error. Please try again."
-      toast.error(errorMsg)
-      console.error('Signup error:', error)
+      if (err.response && err.response.data) {
+        // Show the exact error message from your backend to the user
+        toast.error(err.response.data.error || err.response.data.message || "Registration failed")
+      } else {
+        toast.error("An unexpected error occurred.")
+      }
+      console.error("Signup error:", err)
+     
+      // const errorMsg = error.response?.data?.message || "Server error. Please try again."
+      // toast.error(errorMsg)
+      // console.error('Signup error:', error)
     } finally {
       setLoading(false)
     }

@@ -14,28 +14,39 @@ import { toast } from "sonner"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 export function LoginForm({ className, ...props }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-
+  const { executeRecaptcha } = useGoogleReCaptcha()
   const handleSignIn = async (e) => {
     e.preventDefault()
 
-    // ✅ Basic validation
+
+      // ✅ Basic validation
     if (!email || !password) {
       return toast.warning("Please fill in all fields.")
     }
 
+  // ✅ 3. Check if reCAPTCHA is ready
+    if (!executeRecaptcha) {
+     toast.warning("Security check loading, please wait...")
+      return
+    }
+  
+
     setLoading(true)
 
     try {
+       const token = await executeRecaptcha("login_submit")
       // ✅ Login API call
       const { data } = await axios.post('/api/auth/login', {
         email,
-        password
+        password,
+        recaptchaToken: token
       })
 
       if (data.success && data?.role === 'admin') {
@@ -53,11 +64,19 @@ export function LoginForm({ className, ...props }) {
       else {
         toast.error(data.message || 'Invalid credentials')
       }
-    } catch (error) {
+    } catch (err) {
       // ✅ Handle errors
-      const errorMsg = error.response?.data?.message || "Login failed. Please try again."
-      toast.error(errorMsg)
-      console.error('Login error:', error)
+       if (err.response && err.response.data) {
+        // Show the exact error message from your backend to the user
+        toast.error(err.response.data.error || err.response.data.message || "Login failed")
+      } else {
+        toast.error("An unexpected error occurred.")
+      }
+      console.error("Login error:", err)
+     
+      // const errorMsg = error.response?.data?.message || "Login failed. Please try again."
+      // toast.error(errorMsg)
+      // console.error('Login error:', error)
     } finally {
       setLoading(false)
     }

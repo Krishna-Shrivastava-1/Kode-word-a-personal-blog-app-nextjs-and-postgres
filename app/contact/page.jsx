@@ -22,6 +22,7 @@ import {
   Send
 } from 'lucide-react'
 import { useState } from 'react'
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -31,7 +32,7 @@ export default function ContactPage() {
         message: ''
       })
       const [status, setStatus] = useState('idle') // idle, loading, success, error
-    
+      const { executeRecaptcha } = useGoogleReCaptcha()
       const handleChange = (e) => {
         setFormData({
           ...formData,
@@ -41,13 +42,19 @@ export default function ContactPage() {
     
       const handleSubmit = async (e) => {
         e.preventDefault()
+        // ✅ 3. Check if reCAPTCHA is ready
+    if (!executeRecaptcha) {
+     toast.warning("Security check loading, please wait...")
+      return
+    }
         setStatus('loading')
     
         try {
+          const token = await executeRecaptcha("contact_submit")
           const res = await fetch('/api/contact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify({...formData,recaptchaToken: token})
           })
     
           if (res.ok) {

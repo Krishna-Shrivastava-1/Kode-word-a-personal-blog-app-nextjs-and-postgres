@@ -58,7 +58,7 @@ export async function GridBackgroundDemo() {
     {/* Subheading - MOBILE FIRST */}
     <p className="mx-auto mt-6 max-w-2xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-400 xs:text-base sm:text-lg md:text-xl break-words hyphens-auto">
      Deep-dive into high-quality Java LeetCode solutions featuring step-by-step dry runs, 
-  optimal time and space complexity analysis, and insights for building scalable full-stack applications.
+  optimal time and space complexity analysis, and insights for build scalable full-stack applications.
      {/* Documenting my journey in software development—sharing insights, lessons, and ideas through carefully crafted posts that reflect how I think, build, and grow. */}
     </p>
     

@@ -1,17 +1,18 @@
-"use client"
+"use client";
 
-import ReactMarkdown from "react-markdown"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Loader2, ArrowDown, Sparkles } from "lucide-react"
-import { useEffect, useState, useRef, useCallback } from "react"
+import ReactMarkdown from "react-markdown";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, ArrowDown, Sparkles } from "lucide-react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { RecaptchaBranding } from "./RecaptchaBranding";
 
 /* Convert Blog ID text into markdown links */
 function processTextWithBlogLinks(text = "") {
   return text.replace(
     /Blog ID:\s*([\w-]+)/gi,
-    (_, blogId) => `[View blog](/blog/${blogId})`
-  )
+    (_, blogId) => `[View blog](/blog/${blogId})`,
+  );
 }
 
 export function Chat({
@@ -24,64 +25,72 @@ export function Chat({
   bottomRef,
 }) {
   const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   // ✅ FAKE STREAMING STATE
-  const [streamingMessage, setStreamingMessage] = useState("")
-  const [isStreaming, setIsStreaming] = useState(false)
-  const streamIntervalRef = useRef(null)
-  const streamTextRef = useRef("")
+  const [streamingMessage, setStreamingMessage] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const streamIntervalRef = useRef(null);
+  const streamTextRef = useRef("");
 
   // ✅ STREAMING LOGIC
   useEffect(() => {
     if (isGenerating) {
       // Start fake streaming when generating starts
-      setIsStreaming(true)
-      setStreamingMessage("")
-      streamTextRef.current = ""
-      
+      setIsStreaming(true);
+      setStreamingMessage("");
+      streamTextRef.current = "";
+
       // Clear any existing interval
       if (streamIntervalRef.current) {
-        clearInterval(streamIntervalRef.current)
+        clearInterval(streamIntervalRef.current);
       }
 
       // Fake stream every 30-80ms (ChatGPT-like speed)
-      streamIntervalRef.current = setInterval(() => {
-        if (streamTextRef.current.length < 100) {
-          // Fast initial burst
-          streamTextRef.current += " "
-          setStreamingMessage(streamTextRef.current)
-        } else if (streamTextRef.current.length < 300) {
-          // Medium speed
-          streamTextRef.current += "█"
-          setStreamingMessage(streamTextRef.current)
-        } else {
-          // Slow thoughtful typing
-          const words = ["thinking...", "let me check...", "interesting...", "analyzing..."]
-          const randomWord = words[Math.floor(Math.random() * words.length)]
-          streamTextRef.current += randomWord
-          setStreamingMessage(streamTextRef.current)
-        }
-        
-        // Auto-scroll during stream
-        scrollToBottom()
-      }, Math.random() * 50 + 30) // 30-80ms random delay
+      streamIntervalRef.current = setInterval(
+        () => {
+          if (streamTextRef.current.length < 100) {
+            // Fast initial burst
+            streamTextRef.current += " ";
+            setStreamingMessage(streamTextRef.current);
+          } else if (streamTextRef.current.length < 300) {
+            // Medium speed
+            streamTextRef.current += "█";
+            setStreamingMessage(streamTextRef.current);
+          } else {
+            // Slow thoughtful typing
+            const words = [
+              "thinking...",
+              "let me check...",
+              "interesting...",
+              "analyzing...",
+            ];
+            const randomWord = words[Math.floor(Math.random() * words.length)];
+            streamTextRef.current += randomWord;
+            setStreamingMessage(streamTextRef.current);
+          }
+
+          // Auto-scroll during stream
+          scrollToBottom();
+        },
+        Math.random() * 50 + 30,
+      ); // 30-80ms random delay
     } else {
       // Stop streaming when done
-      setIsStreaming(false)
+      setIsStreaming(false);
       if (streamIntervalRef.current) {
-        clearInterval(streamIntervalRef.current)
-        streamIntervalRef.current = null
+        clearInterval(streamIntervalRef.current);
+        streamIntervalRef.current = null;
       }
     }
 
     return () => {
       if (streamIntervalRef.current) {
-        clearInterval(streamIntervalRef.current)
+        clearInterval(streamIntervalRef.current);
       }
-    }
-  }, [isGenerating, scrollToBottom])
+    };
+  }, [isGenerating, scrollToBottom]);
 
   return (
     <div className="relative flex flex-col bg-background h-dvh sm:h-[520px]">
@@ -101,7 +110,8 @@ export function Chat({
                 Hello 👋 I'm <span className="text-blue-600">Kas</span>
               </h2>
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-6">
-                Your personal assistant for exploring blogs, finding insights, and discovering content faster.
+                Your personal assistant for exploring blogs, finding insights,
+                and discovering content faster.
               </p>
             </div>
           </div>
@@ -115,7 +125,9 @@ export function Chat({
           >
             <div
               className={`inline-block max-w-[80%] px-3 py-2 rounded-lg text-sm leading-relaxed break-words ${
-                m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                m.role === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
               }`}
             >
               <ReactMarkdown
@@ -125,19 +137,33 @@ export function Chat({
                       {...props}
                       className="underline font-medium text-blue-600 hover:opacity-80"
                       target={props.href?.startsWith("/") ? "_self" : "_blank"}
-                      rel={props.href?.startsWith("/") ? undefined : "noopener noreferrer"}
+                      rel={
+                        props.href?.startsWith("/")
+                          ? undefined
+                          : "noopener noreferrer"
+                      }
                     />
                   ),
-                  p: ({ ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                  p: ({ ...props }) => (
+                    <p {...props} className="mb-2 last:mb-0" />
+                  ),
                 }}
               >
-                {m.role === "assistant" ? processTextWithBlogLinks(m.content) : m.content}
+                {m.role === "assistant"
+                  ? processTextWithBlogLinks(m.content)
+                  : m.content}
               </ReactMarkdown>
               {m.sources?.length > 0 && (
                 <div className="mt-2 border-t pt-2 text-xs space-y-1">
-                  <div className="font-medium text-muted-foreground">Sources:</div>
+                  <div className="font-medium text-muted-foreground">
+                    Sources:
+                  </div>
                   {m.sources.map((s) => (
-                    <a key={s.blog_id} href={`/blog/${s.blog_id}`} className="block text-blue-600 hover:underline">
+                    <a
+                      key={s.blog_id}
+                      href={`/blog/${s.blog_id}`}
+                      className="block text-blue-600 hover:underline"
+                    >
                       {s.title}
                     </a>
                   ))}
@@ -158,7 +184,11 @@ export function Chat({
                       {...props}
                       className="underline font-medium text-blue-600 hover:opacity-80"
                       target={props.href?.startsWith("/") ? "_self" : "_blank"}
-                      rel={props.href?.startsWith("/") ? undefined : "noopener noreferrer"}
+                      rel={
+                        props.href?.startsWith("/")
+                          ? undefined
+                          : "noopener noreferrer"
+                      }
                     />
                   ),
                 }}
@@ -187,11 +217,18 @@ export function Chat({
       </Button>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="sticky bottom-0 border-t bg-background p-3 flex gap-2 pb-[18px]">
+      <form
+        onSubmit={handleSubmit}
+        className="sticky bottom-0 border-t bg-background p-3 flex gap-2 pb-[18px]"
+      >
         <Input
           value={input}
           onChange={handleInputChange}
-          placeholder={messages.length === 0 ? "Ask Kas about your blogs..." : "Ask about your blogs…"}
+          placeholder={
+            messages.length === 0
+              ? "Ask Kas about your blogs..."
+              : "Ask about your blogs…"
+          }
           disabled={isGenerating}
         />
         {isGenerating ? (
@@ -204,19 +241,29 @@ export function Chat({
           </Button>
         )}
       </form>
-
+      <div className="w-full flex items-center justify-center">
+        <div className="max-w-xs my-2">
+          <RecaptchaBranding />
+        </div>
+      </div>
       {/* ✅ BLINKING CURSOR CSS */}
       <style jsx>{`
         @keyframes blink {
-          0%, 50% { opacity: 1; }
-          51%, 100% { opacity: 0; }
+          0%,
+          50% {
+            opacity: 1;
+          }
+          51%,
+          100% {
+            opacity: 0;
+          }
         }
         .animate-blink {
           animation: blink 1s infinite;
         }
       `}</style>
     </div>
-  )
+  );
 }
 
 // "use client"
@@ -278,11 +325,9 @@ export function Chat({
 //         discovering content faster.
 //       </p>
 
-
 //     </div>
 //   </div>
 // )}
-
 
 //         {/* Regular Messages */}
 //         {messages.map((m) => {
@@ -384,8 +429,8 @@ export function Chat({
 //           value={input}
 //           onChange={handleInputChange}
 //           placeholder={
-//             messages.length === 0 
-//               ? "Ask Kas about your blogs..." 
+//             messages.length === 0
+//               ? "Ask Kas about your blogs..."
 //               : "Ask about your blogs…"
 //           }
 //           disabled={isGenerating}

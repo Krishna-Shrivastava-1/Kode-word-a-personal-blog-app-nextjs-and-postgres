@@ -23,6 +23,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 export function OTPForm({ ...props }) {
   const { registrationEmail } = useAuth()
@@ -30,7 +31,7 @@ export function OTPForm({ ...props }) {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
+  const { executeRecaptcha } = useGoogleReCaptcha()
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -39,14 +40,20 @@ export function OTPForm({ ...props }) {
       toast.warning('Please enter all 6 digits');
       return;
     }
-
+// ✅ 3. Check if reCAPTCHA is ready
+    if (!executeRecaptcha) {
+     toast.warning("Security check loading, please wait...")
+      return
+    }
     setLoading(true);
     setError('');
 
     try {
+       const token = await executeRecaptcha("otp_submit")
       const { data } = await axios.post('/api/auth/verified-register', {
         email: registrationEmail,
-        otp
+        otp,
+          recaptchaToken: token
       });
 
       if (data.success) {

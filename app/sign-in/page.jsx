@@ -4,6 +4,7 @@ import { LoginForm } from "@/components/login-form"
 import logo from '../../public/logo.png'
 import Image from "next/image";
 import Link from "next/link";
+import { RecaptchaBranding } from "@/components/RecaptchaBranding";
 export default function LoginPage() {
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
@@ -19,6 +20,7 @@ export default function LoginPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
             <LoginForm />
+            <RecaptchaBranding />
           </div>
         </div>
       </div>

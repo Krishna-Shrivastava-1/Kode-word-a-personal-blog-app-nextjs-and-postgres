@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Mail, User, MessageSquare, Send, Briefcase, CheckCircle } from 'lucide-react'
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 
 export default function HireMeSection() {
   const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ export default function HireMeSection() {
     message: ''
   })
   const [status, setStatus] = useState('idle') // idle, loading, success, error
-
+const { executeRecaptcha } = useGoogleReCaptcha()
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -20,13 +21,18 @@ export default function HireMeSection() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+     if (!executeRecaptcha) {
+     toast.warning("Security check loading, please wait...")
+      return
+    }
     setStatus('loading')
 
     try {
+       const token = await executeRecaptcha("contact_submit")
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({...formData,recaptchaToken: token})
       })
 
       if (res.ok) {
