@@ -10,6 +10,7 @@ import { cookies } from "next/headers";
 import ClientSidebarWrapper from "@/components/ClientSidebarWrapper";
 import { GoogleAnalytics } from '@next/third-parties/google';
 import ReCaptchaProvider from "./ReCaptchaProvider";
+import FeatureAnnouncement from "@/components/FeatureAnnouncement";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -110,8 +111,10 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Krishna Shrivastava | Kode$word',
-    description: 'Building KriCal, solving LeetCode, and mastering System Design.',
-    creator: '@yourtwitterhandle', // Add this if you have one
+    description: 'Full-Stack Developer building scalable system and projects like BrilliCode and sharing knowledge on Kode$word.',
+    creator: '@Krishna__Stark', // Add this if you have one
+    site: '@Krishna__Stark',
+    images: ['https://kodesword.vercel.app/']
   },
 
   category: 'technology',
@@ -205,6 +208,7 @@ export default function RootLayout({ children }) {
         <ReCaptchaProvider>
         <ContextProvider>
           <ClientSidebarWrapper>
+            <FeatureAnnouncement />
             {children}
             {/* <ChatWidget /> */}
           </ClientSidebarWrapper>

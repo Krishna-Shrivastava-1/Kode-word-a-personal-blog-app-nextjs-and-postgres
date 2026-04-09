@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { toast } from 'sonner'
+import JavaVisualizer from './JavaVisualizer'
 
 // ─── Silent language detection ────────────────────────────────────────────────
 function detectLang(code) {
@@ -377,40 +378,369 @@ function ArticleNotepad({ articleSlug }) {
 
 // ─── Code Block ───────────────────────────────────────────────────────────────
 function CodeBlockWithCopy({ code }) {
-  const [copied, setCopied] = useState(false)
-  const lineCount = code.split('\n').length
-  const lang = detectLang(code)
+  const [copied, setCopied] = useState(false);
+  const [showVisualizer, setShowVisualizer] = useState(false);
+  const [showMobileCode, setShowMobileCode] = useState(false);
+  const dialogRef = useRef(null);
+  const mobileCodeDialogRef = useRef(null);
+  const codeScrollRef = useRef(null); // preserve scroll position
+
+  const lineCount = code.split('\n').length;
+  const lang = detectLang(code);
+  const isAlgorithm = ['java', 'javascript', 'cpp', 'c', 'python'].includes(lang) || code.includes('for') || code.includes('if');
+
+  // ── on mount: restore visualizer if hash + sessionStorage match
+  useEffect(() => {
+    if (!isAlgorithm) return;
+    if (window.location.hash === '#visualize') {
+      const saved = sessionStorage.getItem('visualizer-code');
+      if (saved && saved === code) setShowVisualizer(true);
+    }
+  }, []);
+
+  // ── open main dialog
+  // const openVisualizer = () => {
+  //   sessionStorage.setItem('visualizer-code', code);
+  //   window.history.pushState(null, '', '#visualize');
+  //   setShowVisualizer(true);
+  // };
+  const openVisualizer = () => {
+  sessionStorage.setItem('visualizer-code', code);
+  window.history.pushState(null, '', '#visualize');
+  setShowVisualizer(true);
+};
+
+  // ── close main dialog
+  // const closeVisualizer = () => {
+  //   setShowVisualizer(false);
+  //   sessionStorage.removeItem('visualizer-code');
+  //   window.history.pushState(null, '', window.location.pathname + window.location.search);
+  //   dialogRef.current?.close?.();
+  // };
+const closeVisualizer = () => {
+  setShowVisualizer(false);
+  sessionStorage.removeItem('visualizer-code');
+  // replaceState instead of pushState — replaces the #visualize entry
+  // so browser back goes to wherever user was before, not back to #visualize
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  dialogRef.current?.close?.();
+};
+  // ── open mobile code dialog (does NOT reset visualizer state)
+  const openMobileCode = () => {
+    setShowMobileCode(true);
+    requestAnimationFrame(() => mobileCodeDialogRef.current?.showModal?.());
+  };
+
+  const closeMobileCode = () => {
+    setShowMobileCode(false);
+    mobileCodeDialogRef.current?.close?.();
+  };
+
+  // ── showModal when showVisualizer becomes true
+  useEffect(() => {
+    if (showVisualizer) {
+      requestAnimationFrame(() => {
+        if (dialogRef.current && !dialogRef.current.open) {
+          dialogRef.current.showModal();
+        }
+      });
+    }
+  }, [showVisualizer]);
+
+  useEffect(() => {
+  const onPop = () => {
+    if (showVisualizer) {
+      setShowVisualizer(false);
+      sessionStorage.removeItem('visualizer-code');
+      // no history call needed here — popstate already moved back for us
+      dialogRef.current?.close?.();
+    }
+  };
+  window.addEventListener('popstate', onPop);
+  return () => window.removeEventListener('popstate', onPop);
+}, [showVisualizer]);
+  // ── browser back closes main dialog
+  useEffect(() => {
+    const onPop = () => {
+      if (showVisualizer) {
+        setShowVisualizer(false);
+        sessionStorage.removeItem('visualizer-code');
+        dialogRef.current?.close?.();
+      }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [showVisualizer]);
+
+  // ── ESC closes main dialog
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') closeVisualizer(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const handleCopy = async () => {
-    try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }
-    catch (err) { console.error('Copy failed:', err) }
-  }
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
+    }
+  };
+
+  // ── shared code block JSX (reused in both panels)
+  const CodeContent = ({ fontSize = 'clamp(0.78rem, 2vw, 0.875rem)' }) => (
+    <SyntaxHighlighter
+      language={lang}
+      style={vscDarkPlus}
+      customStyle={{
+        margin: 0,
+        padding: '1.1rem 1.25rem',
+        fontSize,
+        background: 'transparent',
+        lineHeight: '1.75',
+        fontFamily: '"JetBrains Mono","Fira Code","Cascadia Code",monospace',
+        minWidth: 'max-content',
+      }}
+      showLineNumbers={lineCount > 5}
+      lineNumberStyle={{ color: '#3d444d', fontSize: '0.72rem', minWidth: '2.25rem', userSelect: 'none' }}
+      wrapLongLines={false}
+    >
+      {code}
+    </SyntaxHighlighter>
+  );
 
   return (
-    <div className="code-outer">
-      <div className="code-wrap">
-        <div className="code-header">
-          <div className="mac-dots">
-            {['#ff5f56','#ffbd2e','#27c93f'].map(c => <div key={c} style={{ width:10, height:10, borderRadius:'50%', background:c }}/>)}
+    <>
+      {/* ── Inline Code Block ── */}
+      <div className="my-6 rounded-xl overflow-hidden shadow-lg border border-gray-800">
+        <div className="bg-[#1e1e1e]">
+          <div className="flex justify-between items-center px-4 py-2 bg-[#2d2d2d] border-b border-[#404040]">
+            <div className="flex gap-2">
+              {['#ff5f56', '#ffbd2e', '#27c93f'].map(c => (
+                <div key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              {isAlgorithm && (
+                <button
+                  onClick={openVisualizer}
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded transition-all text-gray-400 hover:text-white hover:bg-white/10"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 19 21 12 17 5 21 12 2" />
+                  </svg>
+                  Visualize
+                </button>
+              )}
+              <button
+                onClick={handleCopy}
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded transition-colors ${copied ? 'text-green-400' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
+              >
+                {copied ? (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-          <button onClick={handleCopy} className={`copy-btn${copied ? ' copied' : ''}`}>
-            {copied
-              ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Copied!</>
-              : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</>}
-          </button>
-        </div>
-        <div className="code-body">
-          <SyntaxHighlighter language={lang} style={vscDarkPlus}
-            customStyle={{ margin:0, padding:'1.1rem 1.25rem', fontSize:'clamp(0.78rem,2vw,0.875rem)', background:'transparent', lineHeight:'1.75', fontFamily:'"JetBrains Mono","Fira Code","Cascadia Code",monospace', minWidth:'max-content' }}
-            showLineNumbers={lineCount > 5}
-            lineNumberStyle={{ color:'#3d444d', fontSize:'0.72rem', minWidth:'2.25rem', userSelect:'none' }}
-            wrapLongLines={false}
-          >{code}</SyntaxHighlighter>
+          <div className="overflow-x-auto">
+            <CodeContent />
+          </div>
         </div>
       </div>
-    </div>
-  )
+
+      {/* ── Main Visualizer Dialog ── */}
+      {showVisualizer && (
+        <dialog
+          ref={dialogRef}
+          onClick={(e) => { if (e.target === dialogRef.current) closeVisualizer(); }}
+          className="fixed inset-0 w-screen h-screen max-w-none max-h-none m-0 p-0 bg-transparent backdrop:bg-black/60 backdrop:backdrop-blur-sm"
+          style={{ border: 'none' }}
+        >
+          {/* 
+            DESKTOP: side by side, both full height
+            MOBILE: only flowchart shown, code accessible via button
+          */}
+          <div className="flex w-full h-full bg-white dark:bg-[#0f0f0f]">
+
+            {/* Left — Code Panel (hidden on mobile) */}
+            <div className="hidden md:flex w-[40%] max-w-[480px] flex-col flex-shrink-0 border-r border-gray-200 dark:border-gray-800 h-full">
+              <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d2d] border-b border-gray-700 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Source Code</span>
+                </div>
+                <button
+                  onClick={closeVisualizer}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              {/* 
+                key point: ref keeps scroll position alive.
+                overflow-auto on this div, NOT on a child, so scroll state is stable.
+              */}
+              <div ref={codeScrollRef} className="flex-1 overflow-auto bg-[#1e1e1e] h-0">
+                <CodeContent fontSize="0.8rem" />
+              </div>
+            </div>
+
+            {/* Right — Flowchart Panel (full width on mobile) */}
+            <div className="flex flex-col flex-1 min-w-0 h-full">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#0f0f0f] flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Flow Diagram</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* Mobile only: View Code button */}
+                  <button
+                    onClick={openMobileCode}
+                    className="flex md:hidden items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+                    </svg>
+                    View Code
+                  </button>
+                  <span className="hidden md:block text-[10px] text-gray-400 dark:text-gray-600">Drag · Scroll to zoom · Pinch on mobile</span>
+                  {/* Mobile close button */}
+                  <button
+                    onClick={closeVisualizer}
+                    className="flex md:hidden items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                    aria-label="Close"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              {/* JavaVisualizer — flex-1 + h-0 forces it to fill exactly, no overflow gap */}
+              <div className="flex-1 h-0 min-h-0">
+                <JavaVisualizer code={code} />
+              </div>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* ── Mobile: View Code Dialog (separate, doesn't unmount visualizer) ── */}
+      {showMobileCode && (
+        <dialog
+          ref={mobileCodeDialogRef}
+          onClick={(e) => { if (e.target === mobileCodeDialogRef.current) closeMobileCode(); }}
+          className="fixed inset-0 w-screen h-screen max-w-none max-h-none m-0 p-0 bg-transparent backdrop:bg-black/70 backdrop:backdrop-blur-sm"
+          style={{ border: 'none' }}
+        >
+          <div className="flex flex-col w-full h-full bg-[#1e1e1e]">
+            <div className="flex items-center justify-between px-4 py-3 bg-[#2d2d2d] border-b border-gray-700 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <span className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Source Code</span>
+              </div>
+              <button
+                onClick={closeMobileCode}
+                className="flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close code panel"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto h-0">
+              <CodeContent fontSize="0.8rem" />
+            </div>
+          </div>
+        </dialog>
+      )}
+    </>
+  );
 }
+
+// function CodeBlockWithCopy({ code }) {
+//   const [copied, setCopied] = useState(false)
+//   const [showVisualizer, setShowVisualizer] = useState(false);
+//   const lineCount = code.split('\n').length
+//   const lang = detectLang(code)
+
+//   const handleCopy = async () => {
+//     try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+//     catch (err) { console.error('Copy failed:', err) }
+//   }
+//   // Very basic check so the button only shows on Java/JS/C code, not JSON/HTML
+//   const isAlgorithm = ['java', 'javascript', 'cpp', 'c', 'python'].includes(lang) || code.includes('for') || code.includes('if');
+
+//   return (
+//     <div className="code-outer my-6 rounded-xl overflow-hidden shadow-lg border border-gray-800">
+//       <div className="code-wrap bg-[#1e1e1e]">
+        
+//         {/* HEADER */}
+//         <div className="code-header flex justify-between items-center px-4 py-2 bg-[#2d2d2d] border-b border-[#404040]">
+//           <div className="mac-dots flex gap-2">
+//             {['#ff5f56','#ffbd2e','#27c93f'].map(c => <div key={c} style={{ width:12, height:12, borderRadius:'50%', background:c }}/>)}
+//           </div>
+          
+//           <div className="flex gap-2">
+//             {/* NEW VISUALIZE BUTTON */}
+//             {isAlgorithm && (
+//               <button 
+//                 onClick={() => setShowVisualizer(!showVisualizer)} 
+//                 className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded transition-colors ${showVisualizer ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
+//               >
+//                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 19 21 12 17 5 21 12 2"/></svg>
+//                 {showVisualizer ? 'Hide Flowchart' : 'Visualize'}
+//               </button>
+//             )}
+
+//             {/* EXISTING COPY BUTTON */}
+//             <button onClick={handleCopy} className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded transition-colors ${copied ? 'text-green-400' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}>
+//               {copied
+//                 ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Copied!</>
+//                 : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</>}
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* CODE BODY */}
+//         <div className="code-body overflow-x-auto">
+//           <SyntaxHighlighter language={lang} style={vscDarkPlus}
+//             customStyle={{ margin:0, padding:'1.1rem 1.25rem', fontSize:'clamp(0.78rem,2vw,0.875rem)', background:'transparent', lineHeight:'1.75', fontFamily:'"JetBrains Mono","Fira Code","Cascadia Code",monospace', minWidth:'max-content' }}
+//             showLineNumbers={lineCount > 5}
+//             lineNumberStyle={{ color:'#3d444d', fontSize:'0.72rem', minWidth:'2.25rem', userSelect:'none' }}
+//             wrapLongLines={false}
+//           >{code}</SyntaxHighlighter>
+//         </div>
+
+//       </div>
+
+//       {/* NEW: EXPANDABLE VISUALIZER CANVAS */}
+//       {showVisualizer && (
+//         <div className="visualizer-wrapper border-t-2 border-blue-500 animate-in slide-in-from-top-4 fade-in duration-300">
+//           <div className="bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 flex justify-between items-center border-b border-blue-100">
+//              <span>Algorithm Flowchart Generated</span>
+//              <span className="font-normal opacity-70">Interactive · Drag & Zoom</span>
+//           </div>
+//           <JavaVisualizer code={code} />
+//         </div>
+//       )}
+//     </div>
+//   )
+// }
 
 // ─── Main Renderer ────────────────────────────────────────────────────────────
 export default function BlogContentRenderer({ content, wordCount, articleSlug = 'article' }) {

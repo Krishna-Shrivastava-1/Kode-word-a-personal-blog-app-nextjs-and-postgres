@@ -100,7 +100,14 @@ export async function generateMetadata({ params }) {
             ]
           : undefined,
       },
-
+ twitter: {
+    card: "summary_large_image",
+    title: post.title,
+    description,
+    creator: "@Krishna__Stark", // Replace with your actual handle
+    site: "@Krishna__Stark",
+    images: post.thumbnailimage ? [post.thumbnailimage] : [],
+  },
       alternates: {
         canonical: `https://kodesword.vercel.app/blog/${post.slug}`, // CRITICAL FOR INDEXING
       },

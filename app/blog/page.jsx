@@ -184,7 +184,7 @@ export async function generateMetadata({ searchParams }) {
     title: page > 1 ? `Blog Page ${page} | Kode$word` : 'Blog ',  // removed this after Blog to prevent duplication | Kode$word
     description: page > 1 
       ? `Page ${page} - Krishna Shrivastava's coding journey`
-      : 'Krishna Shrivastava - LeetCode, Spring Boot, Next.js tutorials',
+      : 'Krishna Shrivastava - LeetCode, Spring Boot, System Design',
     keywords: dynamicKeywords,
     openGraph: {
       title: `Blog${page > 1 ? ` Page ${page}` : ''} | Kode$word`,
