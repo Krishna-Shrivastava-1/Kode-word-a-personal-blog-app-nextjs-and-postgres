@@ -114,7 +114,7 @@ export const metadata = {
     description: 'Full-Stack Developer building scalable system and projects like BrilliCode and sharing knowledge on Kode$word.',
     creator: '@Krishna__Stark', // Add this if you have one
     site: '@Krishna__Stark',
-    images: ['https://kodesword.vercel.app/']
+    images: ['https://kodesword.vercel.app/twitter-image.png']
   },
 
   category: 'technology',
