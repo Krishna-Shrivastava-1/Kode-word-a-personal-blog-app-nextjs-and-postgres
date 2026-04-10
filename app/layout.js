@@ -95,15 +95,15 @@ export const metadata = {
     username: 'kodesword',
     locale: 'en_US',
     url: 'https://kodesword.vercel.app',
-    title: 'Krishna Shrivastava - Developer Portfolio & Blog',
+    title: 'Krishna Shrivastava | KodeSword - Full-Stack Developer & Blog',
     description: 'In-depth Java LeetCode solutions and full-stack engineering insights by Krishna Shrivastava. Focus on dry runs, complexity analysis, and scalable systems.',
     siteName: 'KodeSword',
    images: [
       {
-        url: 'https://kodesword.vercel.app/twitter-image.png', // Point to the BANNER, not the icon
+        url: '/twitter-image.png', // <--- CHANGE THIS FROM /favicon.ico
         width: 1200,
         height: 630,
-        alt: 'KodeSword - Krishna Shrivastava Portfolio',
+        alt: 'Krishna Shrivastava - KodeSword',
       },
     ],
     // images: [
@@ -118,11 +118,11 @@ export const metadata = {
   
   twitter: {
     card: 'summary_large_image',
-    title: 'Krishna Shrivastava | Kode$word',
+    title: 'Krishna Shrivastava | KodeSword - Full-Stack Developer & Blog',
     description: 'Full-Stack Developer building scalable system and projects like BrilliCode and sharing knowledge on Kode$word.',
     creator: '@Krishna__Stark', // Add this if you have one
     site: '@Krishna__Stark',
-   images: ['https://kodesword.vercel.app/twitter-image.png']
+   images: ['/twitter-image.png']
   },
 
   category: 'technology',
