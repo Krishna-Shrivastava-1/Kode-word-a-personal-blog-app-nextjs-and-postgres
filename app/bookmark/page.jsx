@@ -57,20 +57,20 @@ const posts=result?.rows
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   {/* Tag Badge */}
-                  <div className="absolute top-4 w-full flex items-center justify-between px-2 ">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
+                  {/* <div className="absolute top-4 w-full flex items-center justify-between px-2 "> */}
+                    {/* <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
                       <Tag className="w-3 h-3" />
                       {post.tag}
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
+                    </span> */}
+                    {/* <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
                     <Bookmark
           fill={ '#028cdb'}
           stroke={'#028cdb'}
           className="w-3 h-3 cursor-pointer transition-colors hover:scale-110"
         />
                       Bookmarked
-                    </span>
-                  </div>
+                    </span> */}
+                  {/* </div> */}
                 </div>
 
                 {/* Content */}
@@ -96,7 +96,21 @@ const posts=result?.rows
                       <span>{formattedDate(post.created_at)}</span>
                     </div>
                   </div>
-
+  <span className="  text-white text-xs px-2 py-1 rounded-full">
+                       {post.tag?.split(",").map((tag, ind) => {
+                    const cleanTag = tag?.trim();
+                    if (!cleanTag) return null;
+                    return (
+                      <span
+                        key={ind}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500 to-blue-600 text-white mr-2 mb-1 shadow-sm"
+                      >
+                        <Tag className="w-3 h-3" />
+                        {cleanTag}
+                      </span>
+                    );
+                  })}
+                    </span>
                   {/* Read More */}
                   <div className="flex items-center text-blue-600 font-semibold text-sm group-hover:gap-2 transition-all">
                     Read More

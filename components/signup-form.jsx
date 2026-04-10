@@ -139,7 +139,7 @@ toast.warning("Security check loading, please wait...")
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
           <Input 
-            onChange={(e) => setemail(e.target.value)} 
+            onChange={(e) => setemail(e.target.value?.toLowerCase())} 
             id="email" 
             type="email" 
             placeholder="m@example.com" 

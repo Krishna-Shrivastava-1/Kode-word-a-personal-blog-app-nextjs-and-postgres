@@ -108,7 +108,7 @@ export function LoginForm({ className, ...props }) {
             type="email" 
             placeholder="m@example.com" 
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value.toLowerCase())}
             disabled={loading}
             required 
           />
@@ -119,7 +119,7 @@ export function LoginForm({ className, ...props }) {
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
             <a 
-              href="/forgot-password" 
+              href="/reset" 
               className="ml-auto text-sm underline-offset-4 hover:underline text-purple-600"
             >
               Forgot your password?

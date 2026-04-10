@@ -17,7 +17,7 @@ export async function proxy(req) {
     }
     
     // ✅ AUTH PAGES: Redirect logged-in users to home
-    const authPages = ['/sign-in', '/sign-up', '/otp'];
+    const authPages = ['/sign-in', '/sign-up', '/otp', '/reset'];
     if (authPages.includes(pathname)) {
       if (autho.success) {
         // User is logged in → redirect to home
@@ -61,6 +61,7 @@ export const config = {
     '/admin/:path*',      // Admin routes
     '/profile/:path*' ,    // User routes
     '/bookmark',
-    '/setting'
+    '/setting',
+    '/reset'
   ]
 };

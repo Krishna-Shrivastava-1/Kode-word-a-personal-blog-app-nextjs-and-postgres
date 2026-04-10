@@ -2,7 +2,7 @@ import Navbar from '@/components/Navbar'
 import { Authorized } from '@/controllers/authControl'
 import { redirect } from 'next/navigation'
 import pool from '@/lib/db'
-import { Calendar, Mail, BookMarked } from 'lucide-react'
+import { Calendar, Mail, BookMarked, Tag } from 'lucide-react'
 import Image from 'next/image'
 import EditNameDialog from '@/components/EditNameDialog'
 
@@ -41,6 +41,7 @@ export default async function ProfilePage() {
       p.thumbnailimage,
       p.tag,
       p.created_at,
+      p.slug,
       u.name as author_name
     FROM bookmark_user bu
     JOIN posts p ON bu.post_id = p.id
@@ -57,7 +58,13 @@ export default async function ProfilePage() {
     month: 'long',
     day: 'numeric'
   })
-
+ const formattedDate = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -148,7 +155,7 @@ export default async function ProfilePage() {
             </h2>
             {bookmarks.length > 0 && (
               <a 
-                href="/bookmarks" 
+                href="/bookmark" 
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
                 View All →
@@ -167,7 +174,7 @@ export default async function ProfilePage() {
               {bookmarks.map((post) => (
                 <a
                   key={post.id}
-                  href={`/post/${post.id}`}
+                  href={`/blog/${post.slug}`}
                   className="group block bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-all"
                 >
                   <div className="relative h-48">
@@ -178,24 +185,37 @@ export default async function ProfilePage() {
                       className="object-cover group-hover:scale-105 transition-transform"
                       unoptimized
                     />
-                    <span className="absolute top-3 right-3 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                      {post.tag}
-                    </span>
+                   
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600">
+                    <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600">
                       {post.title}
                     </h3>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-start gap-x-3 text-xs text-gray-500">
                       <span>By {post.author_name}</span>
-                      <span>
-                        {new Date(post.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                      <span className='flex items-center gap-x-2'>
+                        <Calendar className="w-4 h-4" />
+                       {formattedDate(post.created_at)}
                       </span>
                     </div>
                   </div>
+                   <div className='p-4'>
+                    <span className="  text-white text-xs px-2 py-1 rounded-full">
+                       {post.tag?.split(",").map((tag, ind) => {
+                    const cleanTag = tag?.trim();
+                    if (!cleanTag) return null;
+                    return (
+                      <span
+                        key={ind}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500 to-blue-600 text-white mr-2 mb-1 shadow-sm"
+                      >
+                        <Tag className="w-3 h-3" />
+                        {cleanTag}
+                      </span>
+                    );
+                  })}
+                    </span>
+                   </div>
                 </a>
               ))}
             </div>
