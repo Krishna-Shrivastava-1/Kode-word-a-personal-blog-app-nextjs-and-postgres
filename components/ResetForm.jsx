@@ -213,7 +213,7 @@
 
 
 'use client'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -233,6 +233,7 @@ import {
   ArrowLeft, 
   CheckCircle2 
 } from "lucide-react"
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
 
 export default function ResetForm() {
   const router = useRouter()
@@ -243,18 +244,28 @@ export default function ResetForm() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [timer, setTimer] = useState(60)
+
   
+  // console.log(timer)
   // Password visibility states
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-
+  const { executeRecaptcha } = useGoogleReCaptcha()
   // 🔥 STEP 1
   const handleSendOTP = async () => {
     if (!email) return toast.warning("Please enter your email address")
-
+      setTimer(60)
+       // ✅ 3. Check if reCAPTCHA is ready
+    if (!executeRecaptcha) {
+      console.error("reCAPTCHA not ready");
+      return;
+    }
     setLoading(true)
     try {
-      const resp = await axios.post('/api/auth/forgot-password', { email })
+       // ✅ 4. Generate the token!
+      const token = await executeRecaptcha("chat_submit")
+      const resp = await axios.post('/api/auth/forgot-password', { email,recaptchaToken: token  })
       if(resp.data?.success){
           toast.success("OTP sent to your email!")
           setStep(2)
@@ -265,9 +276,16 @@ export default function ResetForm() {
       setLoading(false)
     }
   }
+useEffect(() => {
+  if (step == 2 && timer > 0) {
+    const id = setTimeout(() => setTimer(timer - 1), 1000);
+    return () => clearTimeout(id); // Clean up on unmount or re-run
+  }
+}, [timer,step]);
 
   // 🔥 STEP 2
   const handleVerifyOTP = async () => {
+   
     if (otp.length !== 6) return toast.warning("Please enter the full 6-digit OTP")
 
     setLoading(true)
@@ -419,9 +437,9 @@ export default function ResetForm() {
                   <button onClick={() => setStep(1)} className="text-muted-foreground hover:text-gray-900 flex items-center gap-1 mb-4 sm:mb-0 transition-colors">
                     <ArrowLeft className="w-4 h-4" /> Change Email
                   </button>
-                  <button onClick={handleSendOTP} className="text-primary font-medium hover:underline">
-                    Didn't receive it? Resend
-                  </button>
+                <span  className="text-primary font-medium hover:underline">
+                    Didn't receive it? {timer !=0 &&`00:${timer <10 ? '0' :'' }${timer}`} <button type="button" className="font-medium text-purple-600 hover:underline disabled:opacity-50" disabled={timer >0 ? true : false} onClick={handleSendOTP}>Resend</button> 
+                  </span>
                 </div>
               </div>
             </div>

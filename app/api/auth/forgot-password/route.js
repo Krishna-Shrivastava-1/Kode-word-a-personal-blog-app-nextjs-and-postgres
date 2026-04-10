@@ -15,7 +15,7 @@ const normalizeEmail = (email) => {
 };
 export async function POST(req) {
     try {
-        const {email}  = await req.json();
+        const {email,recaptchaToken}  = await req.json();
 const safeEmail = normalizeEmail(email);
  const domain = safeEmail.split("@")[1];
 
@@ -34,7 +34,30 @@ const safeEmail = normalizeEmail(email);
         { status: 403 }
       );
     }
+ // ✅ 2. If no token is provided, block the request instantly
+    if (!recaptchaToken) {
+      return NextResponse.json(
+        { error: "Security check failed. Please refresh and try again." },
+        { status: 400 }
+      )
+    }
 
+    // ✅ 3. Send the token to Google to verify
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaToken}`;
+
+    const recaptchaRes = await fetch(verifyUrl, { method: "POST" });
+    const recaptchaData = await recaptchaRes.json();
+
+    // ✅ 4. Check the score! (0.0 is a bot, 1.0 is a human)
+    // 0.5 is a standard safe threshold.
+    if (!recaptchaData.success || recaptchaData.score < 0.5) {
+      console.warn("Bot detected in Chat API:", recaptchaData);
+      return NextResponse.json(
+        { error: "Bot detected. Request blocked." }, 
+        { status: 403 }
+      );
+    }
     // 🛡️ STEP 2: Abstract API (secondary check)
     const abstractKey = process.env.ABSTRACT_API_KEY;
 

@@ -1,5 +1,5 @@
 'use client'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import axios from "axios"
 import { useAuth } from "./ContextAPI"
 import { toast } from "sonner"
@@ -31,6 +31,7 @@ export function OTPForm({ ...props }) {
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+    const [timer, setTimer] = useState(60)
   const { executeRecaptcha } = useGoogleReCaptcha()
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,14 +95,19 @@ export function OTPForm({ ...props }) {
       setLoading(false);
     }
   };
-
+useEffect(() => {
+  if ( timer > 0) {
+    const id = setTimeout(() => setTimer(timer - 1), 1000);
+    return () => clearTimeout(id); // Clean up on unmount or re-run
+  }
+}, [timer]);
   const handleResend = async () => {
     if (!registrationEmail) {
       toast.error('Session expired. Please register again.');
       router.push('/sign-up');
       return;
     }
-
+setTimer(60)
     setLoading(true);
     setError('');
     
@@ -184,17 +190,20 @@ export function OTPForm({ ...props }) {
               >
                 {loading ? 'Verifying...' : 'Verify'}
               </Button>
-              
+          
+                    
+                  
               <FieldDescription className="text-center">
                 Didn&apos;t receive the code?{' '}
-                <button
+                <span
                   type="button"
-                  onClick={handleResend}
+                  // onClick={handleResend}
                   disabled={loading}
                   className="font-medium text-purple-600 hover:underline disabled:opacity-50"
                 >
-                  Resend
-                </button>
+                  {timer !=0 &&`00:${timer <10 ? '0' :'' }${timer}`} <button type="button" className="font-medium text-purple-600 hover:underline disabled:opacity-50" disabled={timer >0 ? true : false} onClick={handleResend}>Resend</button> 
+                  
+                </span>
               </FieldDescription>
             </FieldGroup>
           </FieldGroup>

@@ -11,7 +11,7 @@ export default function ClientSidebarWrapper({ children }) {
   const pathname = usePathname()
   const [statusHealth, setstatusHealth] = useState(true)
   
-const hideOnRoutes = ["/", "/otp", "/sign-in", "/sign-up"]
+const hideOnRoutes = ["/", "/otp", "/sign-in", "/sign-up","/reset"]
 const shouldHideChatWidget = hideOnRoutes.includes(pathname)
 
 
@@ -41,6 +41,7 @@ useEffect(() => {
         {/* Mobile Chat Widget */}
        {
   pathname !== "/otp" &&
+  pathname !== "/reset" &&
   pathname !== "/sign-in" &&
   pathname !== "/sign-up" && (
     <div>
