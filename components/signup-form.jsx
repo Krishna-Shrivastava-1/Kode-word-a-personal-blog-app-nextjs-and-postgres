@@ -16,7 +16,7 @@ import { useAuth } from "./ContextAPI"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3"
-
+import disposableDomains from 'disposable-email-domains';
 export function SignupForm({ className, ...props }) {
   const [name, setname] = useState('')
   const [email, setemail] = useState('')
@@ -26,11 +26,26 @@ export function SignupForm({ className, ...props }) {
     const { executeRecaptcha } = useGoogleReCaptcha()
   const router = useRouter()
   const { setregistrationEmail } = useAuth()
+const validateEmail = (inputEmail) => {
+  // Check if @ exists first to prevent crashes
+  if (!inputEmail || !inputEmail.includes('@')) {
+    toast.error("Please enter a valid email address.");
+    return false;
+  }
+   const domain = inputEmail.includes('@') ? inputEmail.split('@')[1].toLowerCase() : "";
+    
+    if (disposableDomains.includes(domain)) {
+      toast.error("Temporary emails are not allowed on KodeSword. Please use a permanent provider (Gmail, Outlook, etc).");
+      return false;
+    }
 
+    return true;
+  };
   const handleSignUp = async (e) => {
     e.preventDefault()
 
      // Validation
+     if (!validateEmail(email)) return;
     if (password !== passwordConfirm) {
       return toast.warning("Passwords do not match.")
     }
