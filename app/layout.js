@@ -114,7 +114,14 @@ export const metadata = {
     description: 'Full-Stack Developer building scalable system and projects like BrilliCode and sharing knowledge on Kode$word.',
     creator: '@Krishna__Stark', // Add this if you have one
     site: '@Krishna__Stark',
-    images: ['https://kodesword.vercel.app/twitter-image.png']
+   images: [
+      {
+        url: '/twitter-image.png', // Next.js handles the base URL automatically if metadataBase is set
+        width: 1200,
+        height: 630,
+        alt: 'KodeSword Preview Image',
+      },
+    ],
   },
 
   category: 'technology',
