@@ -100,7 +100,7 @@ export const metadata = {
     siteName: 'KodeSword',
    images: [
       {
-        url: '/twitter-image.png', // <--- CHANGE THIS FROM /favicon.ico
+        url: 'https://kodesword.vercel.app/kodeswordbanner.png', // <--- CHANGE THIS FROM /favicon.ico
         width: 1200,
         height: 630,
         alt: 'Krishna Shrivastava - KodeSword',
@@ -122,7 +122,7 @@ export const metadata = {
     description: 'Full-Stack Developer building scalable system and projects like BrilliCode and sharing knowledge on Kode$word.',
     creator: '@Krishna__Stark', // Add this if you have one
     site: '@Krishna__Stark',
-   images: ['/twitter-image.png']
+   images: ['https://kodesword.vercel.app/kodeswordbanner.png']
   },
 
   category: 'technology',
