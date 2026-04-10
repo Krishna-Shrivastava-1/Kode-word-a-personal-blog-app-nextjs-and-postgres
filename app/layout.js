@@ -98,14 +98,22 @@ export const metadata = {
     title: 'Krishna Shrivastava - Developer Portfolio & Blog',
     description: 'In-depth Java LeetCode solutions and full-stack engineering insights by Krishna Shrivastava. Focus on dry runs, complexity analysis, and scalable systems.',
     siteName: 'KodeSword',
-    images: [
+   images: [
       {
-        url: '/favicon.ico', // Make sure you have an image file in your public folder!
+        url: 'https://kodesword.vercel.app/twitter-image.png', // Point to the BANNER, not the icon
         width: 1200,
         height: 630,
         alt: 'KodeSword - Krishna Shrivastava Portfolio',
       },
     ],
+    // images: [
+    //   {
+    //     url: '/favicon.ico', // Make sure you have an image file in your public folder!
+    //     width: 1200,
+    //     height: 630,
+    //     alt: 'KodeSword - Krishna Shrivastava Portfolio',
+    //   },
+    // ],
   },
   
   twitter: {
@@ -114,14 +122,7 @@ export const metadata = {
     description: 'Full-Stack Developer building scalable system and projects like BrilliCode and sharing knowledge on Kode$word.',
     creator: '@Krishna__Stark', // Add this if you have one
     site: '@Krishna__Stark',
-   images: [
-      {
-        url: '/twitter-image.png', // Next.js handles the base URL automatically if metadataBase is set
-        width: 1200,
-        height: 630,
-        alt: 'KodeSword Preview Image',
-      },
-    ],
+   images: ['https://kodesword.vercel.app/twitter-image.png']
   },
 
   category: 'technology',
