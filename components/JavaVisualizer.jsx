@@ -1050,6 +1050,356 @@
 
 
 
+// "use client";
+
+// import { useState, useCallback, useEffect } from "react";
+// import ReactFlow, {
+//   MiniMap,
+//   Controls,
+//   Background,
+//   applyNodeChanges,
+//   applyEdgeChanges,
+//   Handle,
+//   Position,
+// } from "reactflow";
+// import "reactflow/dist/style.css";
+// import dagre from "dagre";
+
+// // ==========================================
+// // 1. CUSTOM NODE: DIAMOND (For IFs / Loops)
+// // ==========================================
+// const DiamondNode = ({ data }) => {
+//   return (
+//     <div className="relative w-32 h-32 flex items-center justify-center">
+//       <div className="absolute w-24 h-24 bg-yellow-100 border-2 border-yellow-500 transform rotate-45 rounded-sm shadow-sm"></div>
+//       <div className="relative z-10 text-xs font-bold text-center px-2">
+//         {data.label}
+//       </div>
+//       <Handle type="target" position={Position.Top} />
+//       <Handle type="source" position={Position.Bottom} />
+//       <Handle type="source" position={Position.Left} id="left" />
+//       <Handle type="source" position={Position.Right} id="right" />
+//     </div>
+//   );
+// };
+
+// const nodeTypes = { diamond: DiamondNode };
+
+// // ==========================================
+// // 2. AUTO-LAYOUT ENGINE (Dagre)
+// // ==========================================
+// const getLayoutedElements = (nodes, edges, direction = "TB") => {
+//   const dagreGraph = new dagre.graphlib.Graph();
+//   dagreGraph.setDefaultEdgeLabel(() => ({}));
+//   dagreGraph.setGraph({ rankdir: direction, nodesep: 80, ranksep: 100 });
+
+//   nodes.forEach((node) => {
+//     dagreGraph.setNode(node.id, { width: 150, height: 80 });
+//   });
+
+//   edges.forEach((edge) => {
+//     dagreGraph.setEdge(edge.source, edge.target);
+//   });
+
+//   dagre.layout(dagreGraph);
+
+//   nodes.forEach((node) => {
+//     const nodeWithPosition = dagreGraph.node(node.id);
+//     node.targetPosition = "top";
+//     node.sourcePosition = "bottom";
+//     node.position = {
+//       x: nodeWithPosition.x - 75,
+//       y: nodeWithPosition.y - 40,
+//     };
+//   });
+
+//   return { nodes, edges };
+// };
+
+// // ==========================================
+// // 3. MAIN COMPONENT
+// // ==========================================
+// export default function JavaVisualizer({code}) {
+//   const [javaCode, setJavaCode] = useState(code ||
+//     `void printMatrix(int[][] matrix) {
+//     for (int i = 0; i < matrix.length; i++) {
+//         for (int j = 0; j < matrix[0].length; j++) {
+//             System.out.print(matrix[i][j]);
+//         }
+//     }
+// }`
+//   );
+
+//   const [nodes, setNodes] = useState([]);
+//   const [edges, setEdges] = useState([]);
+//   const [errorMessage, setErrorMessage] = useState("");
+
+//   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+//   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+
+//   const generateDiagram = () => {
+//     setErrorMessage("");
+//     try {
+//       let rfNodes = [];
+//       let rfEdges = [];
+//       let nodeId = 1;
+
+//       const safeText = (text) => text.replace(/[`"\[\]]/g, "'").replace(/[{}]/g, "").trim();
+
+//       const createNode = (text, shape = "rect") => {
+//         const id = `N${nodeId++}`;
+//         const escaped = safeText(text);
+
+//         let nodeObj = {
+//           id: id,
+//           data: { label: escaped },
+//           position: { x: 0, y: 0 },
+//         };
+
+//         if (shape === "diamond") {
+//           nodeObj.type = "diamond";
+//         } else if (shape === "round") {
+//           nodeObj.style = {
+//             borderRadius: "30px",
+//             background: "#eff6ff",
+//             border: "2px solid #3b82f6",
+//             fontWeight: "bold",
+//             padding: "10px",
+//             fontSize: "12px"
+//           };
+//         } else {
+//           nodeObj.style = {
+//             background: "#ffffff",
+//             border: "1px solid #222",
+//             padding: "10px",
+//             borderRadius: "5px",
+//             fontSize: "12px",
+//             boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+//           };
+//         }
+
+//         rfNodes.push(nodeObj);
+//         return id;
+//       };
+
+//       const connect = (from, to, label = "") => {
+//         if (!from || !to) return;
+//         const isAnimated = label.includes("Call") || label.includes("Iteration") || label.includes("Loop");
+//         const isFalse = label.includes("False");
+
+//         rfEdges.push({
+//           id: `e${from}-${to}-${rfEdges.length}`,
+//           source: String(from),
+//           target: String(to),
+//           label: label,
+//           animated: isAnimated,
+//           style: { stroke: isFalse ? "#ef4444" : isAnimated ? "#3b82f6" : "#222", strokeWidth: 2 },
+//           labelStyle: { fill: "#444", fontWeight: "bold", fontSize: 11 },
+//           labelBgStyle: { fill: "#fff", fillOpacity: 0.9 },
+//         });
+//       };
+
+//       const cleanCode = javaCode
+//         .split("\n")
+//         .map((line) => line.split("//")[0].trim())
+//         .filter((line) => line.length > 0 && !line.startsWith("```") && !line.startsWith("**"));
+
+//       let previousNode = null;
+//       let stack = [];
+//       let knownMethods = {};
+
+//       cleanCode.forEach((line) => {
+//         if (line.includes("(") && line.includes("{") && !line.startsWith("if") && !line.startsWith("for") && !line.startsWith("while") && !line.startsWith("}")) {
+//           let beforeParens = line.split("(")[0].trim();
+//           let words = beforeParens.split(/\s+/);
+//           let methodName = words[words.length - 1];
+//           knownMethods[methodName] = true;
+//         }
+//       });
+
+//       for (let i = 0; i < cleanCode.length; i++) {
+//         let line = cleanCode[i];
+
+//         if (line.startsWith("}")) {
+//           if (stack.length > 0) {
+//             let block = stack.pop();
+//             if (block.type === "loop") {
+//               connect(previousNode, block.loopNode, "Next Iteration");
+//               let loopExit = createNode("Exit Loop", "round");
+//               connect(block.loopNode, loopExit, "Loop Finished (False)");
+//               previousNode = loopExit;
+//             } else if (block.type === "if") {
+//               previousNode = block.mergeNode;
+//             }
+//           }
+//           continue;
+//         }
+
+//         if (line.includes("(") && line.includes("{") && !line.startsWith("if") && !line.startsWith("for") && !line.startsWith("while") && !line.startsWith("}")) {
+//           let beforeParens = line.split("(")[0].trim();
+//           let words = beforeParens.split(/\s+/);
+//           let methodName = words[words.length - 1];
+//           let methodNode = createNode(`Function: ${methodName}`, "round");
+//           knownMethods[methodName] = methodNode;
+//           previousNode = methodNode;
+//           continue;
+//         }
+
+//         if (line.startsWith("for") || line.startsWith("while")) {
+//           let condition = line.substring(line.indexOf("("), line.lastIndexOf(")") + 1);
+//           let loopNode = createNode(`Loop: ${condition}`, "diamond");
+//           connect(previousNode, loopNode);
+//           stack.push({ type: "loop", loopNode: loopNode });
+//           let insideLoopStart = createNode("Enter Loop", "rect");
+//           connect(loopNode, insideLoopStart, "Condition Met");
+//           previousNode = insideLoopStart;
+//           continue;
+//         }
+
+//         if (line.startsWith("if")) {
+//           let condition = line.substring(line.indexOf("("), line.lastIndexOf(")") + 1);
+//           let ifNode = createNode(`if ${condition}`, "diamond");
+//           connect(previousNode, ifNode);
+//           let remainder = line.substring(line.lastIndexOf(")") + 1).trim();
+
+//           if (remainder.startsWith("{") || remainder === "") {
+//             stack.push({ type: "if", mergeNode: ifNode });
+//             let trueNode = createNode("True Path", "rect");
+//             connect(ifNode, trueNode, "True");
+//             previousNode = trueNode;
+//           } else {
+//             let inlineNode = createNode(remainder.replace(";", ""), "rect");
+//             connect(ifNode, inlineNode, "True");
+            
+//             let foundInlineCall = Object.keys(knownMethods).find((name) => remainder.includes(name + "("));
+//             if (foundInlineCall && knownMethods[foundInlineCall] !== true) {
+//               connect(inlineNode, knownMethods[foundInlineCall], `Recursive Call`);
+//             }
+
+//             if (remainder.includes("return")) {
+//               let finalState = createNode("Final Answer", "round");
+//               connect(inlineNode, finalState, "End");
+//             }
+//             let falseNode = createNode("False Path", "rect");
+//             connect(ifNode, falseNode, "False");
+//             previousNode = falseNode;
+//           }
+//           continue;
+//         }
+
+//         let foundMethodCall = Object.keys(knownMethods).find((name) => line.includes(name + "("));
+//         if (foundMethodCall && knownMethods[foundMethodCall] !== true) {
+//           let callNode = createNode(line.replace("{", "").replace(";", ""));
+//           connect(previousNode, callNode);
+//           connect(callNode, knownMethods[foundMethodCall], `Calls ${foundMethodCall}`);
+          
+//           if (line.includes("return")) {
+//             let finalState = createNode("Final Answer (Unwind)", "round");
+//             connect(callNode, finalState, "End");
+//             previousNode = finalState;
+//           } else {
+//             previousNode = callNode;
+//           }
+//           continue;
+//         }
+
+//         if (line.startsWith("return")) {
+//           let returnNode = createNode(line.replace(";", ""), "rect");
+//           connect(previousNode, returnNode);
+//           let finalState = createNode("Final Answer", "round");
+//           connect(returnNode, finalState, "End");
+//           previousNode = finalState;
+//           continue;
+//         }
+
+//         let statementNode = createNode(line.replace("{", "").replace(";", ""));
+//         connect(previousNode, statementNode);
+//         previousNode = statementNode;
+//       }
+
+//       const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(rfNodes, rfEdges);
+//       setNodes(layoutedNodes);
+//       setEdges(layoutedEdges);
+
+//     } catch (error) {
+//       console.error(error);
+//       setErrorMessage("Flowchart generation failed. Ensure your code is formatted simply.");
+//     }
+//   };
+// useEffect(() => {
+//   generateDiagram()
+// }, [javaCode])
+
+//   return (
+//     <div className="flex flex-col gap-4 p-4 lg:p-6 min-h-full w-full bg-gray-50">
+//       {/* <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+//         <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-800 tracking-tight">Interactive Algorithm Visualizer</h2>
+//         <button 
+//           onClick={generateDiagram}
+//           className="px-6 py-3 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg shadow-md w-full lg:w-max"
+//         >
+//           Render Interactive Graph
+//         </button>
+//       </div> */}
+      
+//       {errorMessage && (
+//         <div className="p-4 bg-red-100 text-red-700 font-bold border border-red-400 rounded-lg shadow-sm">
+//           {errorMessage}
+//         </div>
+//       )}
+
+//       {/* RESPONSIVE LAYOUT CONTAINER */}
+//       <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[75vh] w-full">
+        
+//         {/* <textarea
+//           className="w-full lg:w-1/3 h-64 lg:h-full p-4 font-mono text-sm bg-gray-900 text-green-400 rounded-xl shadow-inner outline-none focus:ring-2 focus:ring-blue-500 resize-none lg:resize"
+//           value={javaCode} readOnly
+//           onChange={(e) => setJavaCode(e.target.value)}
+//         /> */}
+        
+//         <div className="w-full  h-[85vh] border-2 border-gray-200 rounded-xl bg-white overflow-hidden shadow-lg">
+//           <ReactFlow
+//             nodes={nodes}
+//             edges={edges}
+//             nodeTypes={nodeTypes}
+//             onNodesChange={onNodesChange}
+//             onEdgesChange={onEdgesChange}
+//             fitView
+//             attributionPosition="bottom-right"
+            
+//             /* ======== FIXED PROTECTIONS ======== */
+//             deleteKeyCode={null}      // Natively stops deletion
+//             nodesConnectable={false}  // Stops random arrow drawing
+//             panOnScroll={true}        
+//             zoomOnPinch={true}        
+//             /* =================================== */
+//           >
+//             <MiniMap 
+//                 className="hidden md:block"
+//                 nodeStrokeColor={(n) => {
+//                     if (n.type === 'diamond') return '#eab308';
+//                     if (n.style?.borderRadius) return '#3b82f6';
+//                     return '#222';
+//                 }}
+//                 nodeColor={(n) => {
+//                     if (n.type === 'diamond') return '#fef08a';
+//                     if (n.style?.borderRadius) return '#eff6ff';
+//                     return '#fff';
+//                 }}
+//             />
+//             <Controls showInteractive={false} />
+//             <Background color="#ccc" gap={16} />
+//           </ReactFlow>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
+
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
@@ -1119,14 +1469,39 @@ const getLayoutedElements = (nodes, edges, direction = "TB") => {
 // ==========================================
 // 3. MAIN COMPONENT
 // ==========================================
-export default function JavaVisualizer({code}) {
-  const [javaCode, setJavaCode] = useState(code ||
-    `void printMatrix(int[][] matrix) {
-    for (int i = 0; i < matrix.length; i++) {
-        for (int j = 0; j < matrix[0].length; j++) {
-            System.out.print(matrix[i][j]);
+export default function JavaVisualizer({ code }) {
+  const [javaCode, setJavaCode] = useState(
+    code ||
+      `public int calPoints(String[] operations) {
+    Stack<Integer> st = new Stack<>();
+    
+    for (int i = 0; i < operations.length; i++) {
+        String op = operations[i];
+        
+        if (op.equals("C")) {
+            st.pop(); 
+            
+        } else if (op.equals("D")) {
+            st.push(st.peek() * 2); 
+            
+        } else if (op.equals("+")) {
+            int prev1 = st.pop();   
+            int prev2 = st.pop();   
+            int sum = prev1 + prev2;
+            st.push(prev2);         
+            st.push(prev1);
+            st.push(sum);           
+            
+        } else {
+            st.push(Integer.parseInt(op)); 
         }
     }
+    
+    int total = 0;
+    while (!st.empty()) {
+        total += st.pop();
+    }
+    return total;
 }`
   );
 
@@ -1137,7 +1512,7 @@ export default function JavaVisualizer({code}) {
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
 
-  const generateDiagram = () => {
+  const generateDiagram = useCallback(() => {
     setErrorMessage("");
     try {
       let rfNodes = [];
@@ -1182,6 +1557,7 @@ export default function JavaVisualizer({code}) {
         return id;
       };
 
+      // EXACTLY reverted to your original edge styling & animation logic
       const connect = (from, to, label = "") => {
         if (!from || !to) return;
         const isAnimated = label.includes("Call") || label.includes("Iteration") || label.includes("Loop");
@@ -1199,122 +1575,201 @@ export default function JavaVisualizer({code}) {
         });
       };
 
-      const cleanCode = javaCode
-        .split("\n")
-        .map((line) => line.split("//")[0].trim())
-        .filter((line) => line.length > 0 && !line.startsWith("```") && !line.startsWith("**"));
+      let cleanLines = javaCode.split("\n")
+        .map(line => line.split("//")[0].trim())
+        .filter(line => line.length > 0 && !line.startsWith("```"));
 
-      let previousNode = null;
-      let stack = [];
+      if (cleanLines.length > 0 && cleanLines[0].match(/^class\s+\w+/)) {
+        cleanLines.shift();
+        for (let i = cleanLines.length - 1; i >= 0; i--) {
+          if (cleanLines[i] === "}") { cleanLines.splice(i, 1); break; }
+        }
+      }
+
+      const getMethodName = (line) => {
+        if (!line.includes("{") || !line.includes("(")) return null;
+        if (line.includes("=") && line.indexOf("=") < line.indexOf("(")) return null;
+        if (line.includes("new ")) return null; 
+        
+        const beforeParens = line.split('(')[0].trim();
+        const words = beforeParens.split(/\s+/);
+        const name = words[words.length - 1];
+        
+        const reserved = new Set(["if", "else", "for", "while", "switch", "catch", "try", "do", "return", "class"]);
+        if (!name || reserved.has(name) || !name.match(/^[a-zA-Z_$][a-zA-Z\d_$]*$/)) return null;
+        
+        return name;
+      };
+
       let knownMethods = {};
-
-      cleanCode.forEach((line) => {
-        if (line.includes("(") && line.includes("{") && !line.startsWith("if") && !line.startsWith("for") && !line.startsWith("while") && !line.startsWith("}")) {
-          let beforeParens = line.split("(")[0].trim();
-          let words = beforeParens.split(/\s+/);
-          let methodName = words[words.length - 1];
-          knownMethods[methodName] = true;
+      cleanLines.forEach(line => {
+        const mName = getMethodName(line);
+        if (mName) {
+            knownMethods[mName] = createNode(`Function: ${mName}`, "round");
         }
       });
 
-      for (let i = 0; i < cleanCode.length; i++) {
-        let line = cleanCode[i];
+      const checkMethodCalls = (text, sourceId) => {
+        Object.keys(knownMethods).forEach(mName => {
+            let callRegex = new RegExp("\\b" + mName + "\\s*\\(");
+            if (callRegex.test(text)) {
+                connect(sourceId, knownMethods[mName], "Calls " + mName);
+            }
+        });
+      };
+
+      let previousNode = null;
+      let stack = [];
+      let nextEdgeLabel = "";
+
+      for (let i = 0; i < cleanLines.length; i++) {
+        let line = cleanLines[i];
+
+        const mName = getMethodName(line);
+        if (mName && knownMethods[mName]) {
+            previousNode = knownMethods[mName];
+            stack.push({ type: "function", name: mName });
+            nextEdgeLabel = "";
+            continue;
+        }
+
+        if (line.match(/^}\s*else\s*if\s*\(/) || line.match(/^else\s*if\s*\(/)) {
+          let condStart = line.indexOf("(");
+          let condition = condStart !== -1 ? line.substring(condStart, line.lastIndexOf(")") + 1) : "";
+          let block = stack[stack.length - 1];
+          if (block && block.type === "if") {
+            if (previousNode !== null) block.mergeExits.push(previousNode);
+            let elseIfNode = createNode(`Else If ${condition}`, "diamond");
+            connect(block.decisionNode, elseIfNode, "False");
+            checkMethodCalls(condition, elseIfNode);
+            block.decisionNode = elseIfNode;
+            previousNode = elseIfNode;
+            nextEdgeLabel = "True";
+          }
+          continue;
+        }
+
+        if (line.match(/^}\s*else\b/) || line.match(/^else\b/)) {
+          let block = stack[stack.length - 1];
+          if (block && block.type === "if") {
+            if (previousNode !== null) block.mergeExits.push(previousNode);
+            block.hasElse = true;
+            let elseNode = createNode("Else Branch", "round");
+            connect(block.decisionNode, elseNode, "False");
+            previousNode = elseNode;
+            nextEdgeLabel = "";
+          }
+          continue;
+        }
 
         if (line.startsWith("}")) {
           if (stack.length > 0) {
             let block = stack.pop();
             if (block.type === "loop") {
-              connect(previousNode, block.loopNode, "Next Iteration");
+              if (previousNode !== null) connect(previousNode, block.loopNode, "Next Iteration");
               let loopExit = createNode("Exit Loop", "round");
               connect(block.loopNode, loopExit, "Loop Finished (False)");
               previousNode = loopExit;
+              nextEdgeLabel = "";
             } else if (block.type === "if") {
-              previousNode = block.mergeNode;
+              if (previousNode !== null) block.mergeExits.push(previousNode);
+              let mergeNode = createNode("Merge Paths", "round");
+              let mergedAny = false;
+              block.mergeExits.forEach((n) => { if (n) { connect(n, mergeNode); mergedAny = true; } });
+              if (!block.hasElse && block.decisionNode) {
+                connect(block.decisionNode, mergeNode, "False");
+                mergedAny = true;
+              }
+              previousNode = mergedAny ? mergeNode : null;
+              nextEdgeLabel = "";
+            } else if (block.type === "function") {
+              if (previousNode !== null) {
+                let endFunc = createNode("End Function", "round");
+                connect(previousNode, endFunc);
+                previousNode = null;
+              }
             }
           }
           continue;
         }
 
-        if (line.includes("(") && line.includes("{") && !line.startsWith("if") && !line.startsWith("for") && !line.startsWith("while") && !line.startsWith("}")) {
-          let beforeParens = line.split("(")[0].trim();
-          let words = beforeParens.split(/\s+/);
-          let methodName = words[words.length - 1];
-          let methodNode = createNode(`Function: ${methodName}`, "round");
-          knownMethods[methodName] = methodNode;
-          previousNode = methodNode;
+        if (line.startsWith("if")) {
+          let condStart = line.indexOf("(");
+          let openCount = 0, condEnd = -1;
+          for(let j=condStart; j<line.length; j++) {
+              if (line[j] === '(') openCount++;
+              else if (line[j] === ')') {
+                  openCount--;
+                  if (openCount === 0) { condEnd = j; break; }
+              }
+          }
+
+          let condition = condEnd !== -1 ? line.substring(condStart, condEnd + 1) : "";
+          let remainder = condEnd !== -1 ? line.substring(condEnd + 1).trim() : "";
+
+          let ifNode = createNode(`if ${condition}`, "diamond");
+          connect(previousNode, ifNode, nextEdgeLabel);
+          checkMethodCalls(condition, ifNode);
+
+          if (remainder && remainder !== "{") {
+              let inlineText = remainder.replace(";", "").trim();
+              let inlineNode = createNode(inlineText, "rect");
+              connect(ifNode, inlineNode, "True");
+              checkMethodCalls(inlineText, inlineNode);
+
+              // Exactly like original inline return style
+              if (inlineText.startsWith("return")) {
+                  let finalState = createNode("Final Answer", "round");
+                  connect(inlineNode, finalState, "End");
+              }
+              previousNode = ifNode;
+              nextEdgeLabel = "False";
+          } else {
+              stack.push({ type: "if", decisionNode: ifNode, mergeExits: [], hasElse: false });
+              let trueNode = createNode("True Path", "rect");
+              connect(ifNode, trueNode, "True");
+              previousNode = trueNode;
+              nextEdgeLabel = "";
+          }
           continue;
         }
 
         if (line.startsWith("for") || line.startsWith("while")) {
           let condition = line.substring(line.indexOf("("), line.lastIndexOf(")") + 1);
           let loopNode = createNode(`Loop: ${condition}`, "diamond");
-          connect(previousNode, loopNode);
+          connect(previousNode, loopNode, nextEdgeLabel);
+          checkMethodCalls(condition, loopNode);
           stack.push({ type: "loop", loopNode: loopNode });
           let insideLoopStart = createNode("Enter Loop", "rect");
           connect(loopNode, insideLoopStart, "Condition Met");
           previousNode = insideLoopStart;
+          nextEdgeLabel = "";
           continue;
         }
 
-        if (line.startsWith("if")) {
-          let condition = line.substring(line.indexOf("("), line.lastIndexOf(")") + 1);
-          let ifNode = createNode(`if ${condition}`, "diamond");
-          connect(previousNode, ifNode);
-          let remainder = line.substring(line.lastIndexOf(")") + 1).trim();
-
-          if (remainder.startsWith("{") || remainder === "") {
-            stack.push({ type: "if", mergeNode: ifNode });
-            let trueNode = createNode("True Path", "rect");
-            connect(ifNode, trueNode, "True");
-            previousNode = trueNode;
-          } else {
-            let inlineNode = createNode(remainder.replace(";", ""), "rect");
-            connect(ifNode, inlineNode, "True");
-            
-            let foundInlineCall = Object.keys(knownMethods).find((name) => remainder.includes(name + "("));
-            if (foundInlineCall && knownMethods[foundInlineCall] !== true) {
-              connect(inlineNode, knownMethods[foundInlineCall], `Recursive Call`);
-            }
-
-            if (remainder.includes("return")) {
-              let finalState = createNode("Final Answer", "round");
-              connect(inlineNode, finalState, "End");
-            }
-            let falseNode = createNode("False Path", "rect");
-            connect(ifNode, falseNode, "False");
-            previousNode = falseNode;
-          }
-          continue;
-        }
-
-        let foundMethodCall = Object.keys(knownMethods).find((name) => line.includes(name + "("));
-        if (foundMethodCall && knownMethods[foundMethodCall] !== true) {
-          let callNode = createNode(line.replace("{", "").replace(";", ""));
-          connect(previousNode, callNode);
-          connect(callNode, knownMethods[foundMethodCall], `Calls ${foundMethodCall}`);
-          
-          if (line.includes("return")) {
-            let finalState = createNode("Final Answer (Unwind)", "round");
-            connect(callNode, finalState, "End");
-            previousNode = finalState;
-          } else {
-            previousNode = callNode;
-          }
-          continue;
-        }
-
+        // Exactly like your original standard returns
         if (line.startsWith("return")) {
-          let returnNode = createNode(line.replace(";", ""), "rect");
-          connect(previousNode, returnNode);
+          let returnText = line.replace(";", "").trim();
+          let returnNode = createNode(returnText, "rect");
+          connect(previousNode, returnNode, nextEdgeLabel);
+          checkMethodCalls(returnText, returnNode);
+          
           let finalState = createNode("Final Answer", "round");
           connect(returnNode, finalState, "End");
-          previousNode = finalState;
+          
+          previousNode = finalState; 
+          nextEdgeLabel = "";
           continue;
         }
 
-        let statementNode = createNode(line.replace("{", "").replace(";", ""));
-        connect(previousNode, statementNode);
-        previousNode = statementNode;
+        let statementText = line.replace(/[{}]/g, "").replace(";", "").trim();
+        if (statementText.length > 0) {
+          let stmtNode = createNode(statementText);
+          connect(previousNode, stmtNode, nextEdgeLabel);
+          checkMethodCalls(statementText, stmtNode);
+          previousNode = stmtNode;
+          nextEdgeLabel = "";
+        }
       }
 
       const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(rfNodes, rfEdges);
@@ -1325,39 +1780,22 @@ export default function JavaVisualizer({code}) {
       console.error(error);
       setErrorMessage("Flowchart generation failed. Ensure your code is formatted simply.");
     }
-  };
-useEffect(() => {
-  generateDiagram()
-}, [javaCode])
+  }, [javaCode]);
+
+  useEffect(() => {
+    generateDiagram();
+  }, [generateDiagram]);
 
   return (
     <div className="flex flex-col gap-4 p-4 lg:p-6 min-h-full w-full bg-gray-50">
-      {/* <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <h2 className="text-2xl lg:text-3xl font-extrabold text-gray-800 tracking-tight">Interactive Algorithm Visualizer</h2>
-        <button 
-          onClick={generateDiagram}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-bold rounded-lg shadow-md w-full lg:w-max"
-        >
-          Render Interactive Graph
-        </button>
-      </div> */}
-      
-      {errorMessage && (
-        <div className="p-4 bg-red-100 text-red-700 font-bold border border-red-400 rounded-lg shadow-sm">
-          {errorMessage}
-        </div>
-      )}
+   
 
-      {/* RESPONSIVE LAYOUT CONTAINER */}
+      {/* RESPONSIVE LAYOUT CONTAINER (Restored exactly to original HTML structure) */}
       <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[75vh] w-full">
         
-        {/* <textarea
-          className="w-full lg:w-1/3 h-64 lg:h-full p-4 font-mono text-sm bg-gray-900 text-green-400 rounded-xl shadow-inner outline-none focus:ring-2 focus:ring-blue-500 resize-none lg:resize"
-          value={javaCode} readOnly
-          onChange={(e) => setJavaCode(e.target.value)}
-        /> */}
+       
         
-        <div className="w-full  h-[85vh] border-2 border-gray-200 rounded-xl bg-white overflow-hidden shadow-lg">
+        <div className="w-full h-[85vh] border-2 border-gray-200 rounded-xl bg-white overflow-hidden shadow-lg">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -1366,13 +1804,10 @@ useEffect(() => {
             onEdgesChange={onEdgesChange}
             fitView
             attributionPosition="bottom-right"
-            
-            /* ======== FIXED PROTECTIONS ======== */
-            deleteKeyCode={null}      // Natively stops deletion
-            nodesConnectable={false}  // Stops random arrow drawing
+            deleteKeyCode={null}      
+            nodesConnectable={false}  
             panOnScroll={true}        
             zoomOnPinch={true}        
-            /* =================================== */
           >
             <MiniMap 
                 className="hidden md:block"
@@ -1395,3 +1830,4 @@ useEffect(() => {
     </div>
   );
 }
+
